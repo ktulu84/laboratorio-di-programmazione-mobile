@@ -15,4 +15,7 @@
     <string name="activity_main_drawer_track_list">Track list</string>
     <string name="activity_main_drawer_info">Info</string>
     <string name="title_activity_new_track">New track</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="order">Order</string>
 </resources>

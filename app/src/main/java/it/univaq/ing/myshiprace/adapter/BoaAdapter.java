@@ -42,24 +42,32 @@ public class BoaAdapter extends RecyclerView.Adapter<BoaAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
+        Boa item = data.get(position);
 
+        if (item == null) return;
+
+        holder.latitude.setText(String.valueOf(item.getLatitude()));
+        holder.longitude.setText(String.valueOf(item.getLongitude()));
+        holder.order.setText(String.valueOf(item.getOrder()));
     }
 
     @Override
     public int getItemCount()
     {
-        return 0;
+        return data.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder
     {
 
-        TextView title, subtitle;
+        TextView latitude, longitude, order;
 
         ViewHolder(View itemView)
         {
             super(itemView);
-
+            latitude = itemView.findViewById(R.id.adapter_boa_latitude);
+            longitude = itemView.findViewById(R.id.adapter_boa_longitude);
+            order = itemView.findViewById(R.id.adapter_boa_order);
         }
 
     }

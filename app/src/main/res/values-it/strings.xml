@@ -14,4 +14,7 @@
     <string name="activity_main_drawer_track_list">Lista tracciati</string>
     <string name="activity_main_drawer_info">Informazioni</string>
     <string name="title_activity_new_track">Nuovo tracciato</string>
+    <string name="latitude">Latitudine</string>
+    <string name="longitude">Longitudine</string>
+    <string name="order">Ordine</string>
 </resources>
