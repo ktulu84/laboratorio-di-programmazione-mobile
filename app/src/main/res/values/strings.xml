@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">MyShipRace</string>
+    <string name="icon_credits">Icons made by Those Icons (www.flaticon.com/authors/those-icons) from www.flaticon.com is licensed by Creative Commons BY 3.0: https://creativecommons.org/licenses/by/3.0/</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="author">Author</string>
+    <string name="author_name" translatable="false">Piero Collevecchio</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="track_name_inputbox_title">Insert track name</string>
+    <string name="track_name_inputbox_ok">OK</string>
+    <string name="track_name_inputbox_cancel">Cancel</string>
+    <string name="adapter_tracciato_num_boe">Number of buoys:</string>
+    <string name="activity_main_drawer_track_list">Track list</string>
+    <string name="activity_main_drawer_info">Info</string>
+    <string name="title_activity_new_track">New track</string>
+</resources>

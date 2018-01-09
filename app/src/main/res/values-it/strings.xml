@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyShipRace</string>
+    <string name="icon_credits">Icone disegnate da Those Icons (www.flaticon.com/authors/those-icons) e prese da www.flaticon.com sotto licenza Creative Commons BY 3.0: https://creativecommons.org/licenses/by/3.0/</string>
+    <string name="navigation_drawer_open">Apri drawer di navigazione</string>
+    <string name="navigation_drawer_close">Chiudi Drawer di navigazione</string>
+    <string name="author">Autore</string>
+    <string name="title_activity_maps">Mappa</string>
+    <string name="track_name_inputbox_title">Inserisci nome tracciato</string>
+    <string name="track_name_inputbox_ok">OK</string>
+    <string name="track_name_inputbox_cancel">Annulla</string>
+    <string name="adapter_tracciato_num_boe">Numero di boe:</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="activity_main_drawer_track_list">Lista tracciati</string>
+    <string name="activity_main_drawer_info">Informazioni</string>
+    <string name="title_activity_new_track">Nuovo tracciato</string>
+</resources>
