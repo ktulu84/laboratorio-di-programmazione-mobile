@@ -47,6 +47,22 @@ public class RaceTrack
 
     private String trackName;
     private List<Boa> trackPath;
+    private int id;
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setTrackName(String trackName)
+    {
+        this.trackName = trackName;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
 
     public RaceTrack()
     {
