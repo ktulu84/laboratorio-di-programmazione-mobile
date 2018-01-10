@@ -12,6 +12,17 @@ import org.json.JSONObject;
 public class Boa extends Position implements Comparable<Boa>
 {
     private int order;
+    private int trackID;
+
+    public int getTrackID()
+    {
+        return trackID;
+    }
+
+    public void setTrackID(int trackID)
+    {
+        this.trackID = trackID;
+    }
 
     public Boa()
     {
