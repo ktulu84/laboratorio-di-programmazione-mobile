@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Toast;
 
 import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
@@ -22,7 +21,7 @@ import it.univaq.ing.myshiprace.model.RaceTrack;
 
 public class TrackActivity extends AppCompatActivity
 {
-    private RaceTrack rt;
+    private static RaceTrack rt;
     RecyclerView list;
 
     @Override
@@ -32,44 +31,51 @@ public class TrackActivity extends AppCompatActivity
         Intent intent = getIntent();
         setContentView(R.layout.activity_track);
         String trackJSON = intent.getStringExtra("track_object");
-        rt = RaceTrack.parseJSON(trackJSON);
-        String trackName = rt.getTrackName();
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null)
+        if (trackJSON != null)
         {
-            actionBar.setTitle(trackName);
+            rt = RaceTrack.parseJSON(trackJSON);
         }
-        list = findViewById(R.id.boa_list);
-        list.setLayoutManager(new LinearLayoutManager(this));
-        list.setAdapter(new BoaAdapter(rt.getBoas()));
-
-        list.addOnItemTouchListener(new RecyclerTouchListener(this,
-                list, new ClickListener()
+        if (rt != null)
         {
-            @Override
-            public void onClick(View view, final int position)
+            String trackName = rt.getTrackName();
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null)
             {
-
+                actionBar.setTitle(trackName);
             }
+            list = findViewById(R.id.boa_list);
+            list.setLayoutManager(new LinearLayoutManager(this));
+            list.setAdapter(new BoaAdapter(rt.getBoas()));
 
-            @Override
-            public void onLongClick(View view, int position)
+            list.addOnItemTouchListener(new RecyclerTouchListener(this,
+                    list, new ClickListener()
             {
-                deleteBoa(view, position);
-            }
-        }));
+                @Override
+                public void onClick(View view, final int position)
+                {
 
-        FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
+                }
+
+                @Override
+                public void onLongClick(View view, int position)
+                {
+                    deleteBoa(view, position);
+                }
+            }));
+
+            FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
+            fab.setOnClickListener(new View.OnClickListener()
             {
-                //TODO
-                Toast.makeText(view.getContext(), "Boa size: " + rt.length(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
+                @Override
+                public void onClick(View view)
+                {
+                    Boa b = new Boa();
+                    Intent intent = new Intent(view.getContext(), BoaActivity.class);
+                    intent.putExtra("boa_object", b.toJSONObject().toString());
+                    view.getContext().startActivity(intent);
+                }
+            });
+        }
 
     }
 
