@@ -42,7 +42,6 @@ public class FragmentList extends Fragment
             @Override
             public void onClick(View view)
             {
-                Context context = view.getContext();
                 showDialog();
             }
         });
