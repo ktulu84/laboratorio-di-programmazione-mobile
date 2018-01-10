@@ -2,8 +2,10 @@ package it.univaq.ing.myshiprace;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.TextView;
 
 public class NewTrackActivity extends AppCompatActivity
@@ -23,5 +25,15 @@ public class NewTrackActivity extends AppCompatActivity
         {
             actionBar.setTitle(trackName);
         }
+
+        FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
+        fab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //TODO
+            }
+        });
     }
 }
