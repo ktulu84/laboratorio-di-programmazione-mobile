@@ -56,17 +56,32 @@ public class FragmentList extends Fragment
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        //TODO add real data
-        for (int i = 0; i < 12; ++i)
+        if (savedInstanceState == null)
         {
-            RaceTrack rt = new RaceTrack("Prova " + i);
-            Boa b = new Boa(12.1, 12.4, 1);
-            b.setId(i);
-            rt.addBoa(b);
-            Boa b1 = new Boa(54.1, 74.56, 2);
-            rt.addBoa(b1);
-            raceTracks.add(rt);
+            //TODO add real data
+            for (int i = 0; i < 12; ++i)
+            {
+                RaceTrack rt = new RaceTrack("Prova " + i);
+                Boa b = new Boa(12.1, 12.4, 1);
+                b.setId(i);
+                rt.addBoa(b);
+                Boa b1 = new Boa(54.1, 74.56, 2);
+                rt.addBoa(b1);
+                raceTracks.add(rt);
+            }
         }
+        else
+        {
+            int i = 0;
+            String track = savedInstanceState.getString("track " + i);
+            while (track != null)
+            {
+                raceTracks.add(RaceTrack.parseJSON(track));
+                ++i;
+                track = savedInstanceState.getString("track " + i);
+            }
+        }
+
 
         list.addOnItemTouchListener(new RecyclerTouchListener(context,
                 list, new ClickListener()
@@ -162,5 +177,15 @@ public class FragmentList extends Fragment
         });
 
         adb.show();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        for (int i = 0; i < raceTracks.size(); ++i)
+        {
+            outState.putString("track " + i, raceTracks.get(i).toJSONArray().toString());
+        }
     }
 }
