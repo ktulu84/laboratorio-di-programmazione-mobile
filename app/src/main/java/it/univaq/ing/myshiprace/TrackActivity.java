@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
-public class NewTrackActivity extends AppCompatActivity
+public class TrackActivity extends AppCompatActivity
 {
 
     @Override
@@ -16,7 +16,7 @@ public class NewTrackActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        setContentView(R.layout.activity_new_track);
+        setContentView(R.layout.activity_track);
         TextView textTrackName = findViewById(R.id.activity_new_track_placeholder);
         String trackName = intent.getStringExtra("track_name");
         textTrackName.setText(trackName);

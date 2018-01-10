@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context="it.univaq.ing.myshiprace.NewTrackActivity">
+    tools:context="it.univaq.ing.myshiprace.TrackActivity">
 
     <TextView
         android:id="@+id/activity_new_track_placeholder"

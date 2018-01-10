@@ -79,7 +79,7 @@ public class FragmentList extends Fragment
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                Intent intent = new Intent(context, NewTrackActivity.class);
+                Intent intent = new Intent(context, TrackActivity.class);
                 intent.putExtra("track_name", input.getText().toString());
                 context.startActivity(intent);
             }
