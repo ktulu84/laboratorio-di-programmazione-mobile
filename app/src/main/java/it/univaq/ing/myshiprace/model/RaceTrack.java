@@ -74,6 +74,11 @@ public class RaceTrack
         }
     }
 
+    public List<Boa> getBoas()
+    {
+        return trackPath;
+    }
+
     public void removeBoa(int position)
     {
         if (position < this.trackPath.size())
