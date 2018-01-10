@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Toast;
 
 import it.univaq.ing.myshiprace.adapter.BoaAdapter;
 import it.univaq.ing.myshiprace.model.RaceTrack;
@@ -33,7 +34,7 @@ public class TrackActivity extends AppCompatActivity
         }
         list = findViewById(R.id.boa_list);
         list.setLayoutManager(new LinearLayoutManager(this));
-        list.setAdapter(new BoaAdapter(rt.getBoas()));
+        list.setAdapter(new BoaAdapter(rt));
 
         FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -42,6 +43,7 @@ public class TrackActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 //TODO
+                Toast.makeText(view.getContext(), "Boa size: " + rt.length(), Toast.LENGTH_SHORT).show();
             }
         });
 
