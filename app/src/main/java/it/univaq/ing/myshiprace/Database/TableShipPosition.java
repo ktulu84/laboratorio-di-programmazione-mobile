@@ -33,10 +33,12 @@ public class TableShipPosition
     {
         String sql = "CREATE TABLE " + TABLE_NAME + "(" +
                 ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TIMESTAMP + "NUMERIC, " +
+                TIMESTAMP + " NUMERIC, " +
                 LATITUDE + " NUMERIC, " +
                 LONGITUDE + " NUMERIC, " +
-                TRACK_ID + "INTEGER" +
+                TRACK_ID + " INTEGER, " +
+                "FOREIGN KEY(" + TRACK_ID + ") " +
+                "REFERENCES " + TableTrack.TABLE_NAME + "(" + TableTrack.ID + ")" +
                 ")";
         db.execSQL(sql);
     }
