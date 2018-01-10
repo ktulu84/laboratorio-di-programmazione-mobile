@@ -27,7 +27,7 @@ public class TableShipPosition
     private static final String TIMESTAMP = "timestamp";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
-    private static final String TRACK = "track_id";
+    private static final String TRACK_ID = "track_id";
 
     public static void create(SQLiteDatabase db)
     {
@@ -36,7 +36,7 @@ public class TableShipPosition
                 TIMESTAMP + "NUMERIC, " +
                 LATITUDE + " NUMERIC, " +
                 LONGITUDE + " NUMERIC, " +
-                TRACK + "INTEGER" +
+                TRACK_ID + "INTEGER" +
                 ")";
         db.execSQL(sql);
     }
@@ -60,7 +60,7 @@ public class TableShipPosition
         values.put(TIMESTAMP, shipPosition.getTimestamp().getTime());
         values.put(LATITUDE, shipPosition.getLatitude());
         values.put(LONGITUDE, shipPosition.getLongitude());
-        values.put(TRACK, shipPosition.getTrackID());
+        values.put(TRACK_ID, shipPosition.getTrackID());
         long id = db.insert(TABLE_NAME, null, values);
         if (id != -1) shipPosition.setId((int) id);
     }
@@ -72,7 +72,7 @@ public class TableShipPosition
         values.put(TIMESTAMP, shipPosition.getTimestamp().getTime());
         values.put(LATITUDE, shipPosition.getLatitude());
         values.put(LONGITUDE, shipPosition.getLongitude());
-        values.put(TRACK, shipPosition.getTrackID());
+        values.put(TRACK_ID, shipPosition.getTrackID());
 //        int rows = db.update(TABLE_NAME, values, ID +"= ?", new String[]{ String.valueOf(shipPosition.getId())} );
         return db.update(TABLE_NAME, values, ID + "=" + shipPosition.getId(), null) == 1;
     }
@@ -100,6 +100,7 @@ public class TableShipPosition
                 shipPosition.setTimestamp(new Timestamp(cursor.getLong(cursor.getColumnIndex(TIMESTAMP))));
                 shipPosition.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
                 shipPosition.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+                shipPosition.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
                 shipPositions.add(shipPosition);
             }
         }

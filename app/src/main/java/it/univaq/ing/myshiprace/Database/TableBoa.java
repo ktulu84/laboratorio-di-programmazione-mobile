@@ -26,6 +26,7 @@ public class TableBoa
     private static final String ORDER = "order";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
+    private static final String TRACK_ID = "track_id";
 
     public static void create(SQLiteDatabase db)
     {
@@ -33,7 +34,8 @@ public class TableBoa
                 ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 ORDER + "INTEGER, " +
                 LATITUDE + " NUMERIC, " +
-                LONGITUDE + " NUMERIC" +
+                LONGITUDE + " NUMERIC, " +
+                TRACK_ID + "INTEGER" +
                 ")";
         db.execSQL(sql);
     }
@@ -57,6 +59,7 @@ public class TableBoa
         values.put(ORDER, boa.getOrder());
         values.put(LATITUDE, boa.getLatitude());
         values.put(LONGITUDE, boa.getLongitude());
+        values.put(TRACK_ID, boa.getTrackID());
         long id = db.insert(TABLE_NAME, null, values);
         if (id != -1) boa.setId((int) id);
     }
@@ -68,6 +71,7 @@ public class TableBoa
         values.put(ORDER, boa.getOrder());
         values.put(LATITUDE, boa.getLatitude());
         values.put(LONGITUDE, boa.getLongitude());
+        values.put(TRACK_ID, boa.getTrackID());
 //        int rows = db.update(TABLE_NAME, values, ID +"= ?", new String[]{ String.valueOf(boa.getId())} );
         return db.update(TABLE_NAME, values, ID + "=" + boa.getId(), null) == 1;
     }
@@ -95,6 +99,7 @@ public class TableBoa
                 boa.setOrder(cursor.getInt(cursor.getColumnIndex(ORDER)));
                 boa.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
                 boa.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+                boa.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
                 boas.add(boa);
             }
         }
