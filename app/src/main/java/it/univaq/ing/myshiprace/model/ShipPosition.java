@@ -18,6 +18,17 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
 {
 
     private Timestamp timestamp;
+    private int trackID;
+
+    public int getTrackID()
+    {
+        return trackID;
+    }
+
+    public void setTrackID(int trackID)
+    {
+        this.trackID = trackID;
+    }
 
     private static DateFormat dateFormat = SimpleDateFormat.getDateTimeInstance();
 
