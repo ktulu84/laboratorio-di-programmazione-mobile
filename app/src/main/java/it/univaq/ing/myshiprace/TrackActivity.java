@@ -47,19 +47,16 @@ public class TrackActivity extends AppCompatActivity
             @Override
             public void onClick(View view, final int position)
             {
-                //Values are passing to activity & to fragment as well
-                Toast.makeText(TrackActivity.this, "Single Click on position        :" + position,
-                        Toast.LENGTH_SHORT).show();
+
             }
 
             @Override
             public void onLongClick(View view, int position)
             {
-                Toast.makeText(TrackActivity.this, "Long press on position :" + position,
-                        Toast.LENGTH_LONG).show();
                 deleteBoa(view, position);
             }
         }));
+
         FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -97,7 +94,7 @@ public class TrackActivity extends AppCompatActivity
         {
             public void onClick(DialogInterface dialog, int which)
             {
-                Toast.makeText(context, "Cliccato Cancel", Toast.LENGTH_SHORT).show();
+
             }
         });
 
