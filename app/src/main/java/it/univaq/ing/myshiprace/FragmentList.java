@@ -74,7 +74,7 @@ public class FragmentList extends Fragment
 
         builder.setView(input);
 
-        builder.setPositiveButton(R.string.track_name_inputbox_ok, new DialogInterface.OnClickListener()
+        builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
@@ -86,7 +86,7 @@ public class FragmentList extends Fragment
             }
         });
 
-        builder.setNegativeButton(R.string.track_name_inputbox_cancel, new DialogInterface.OnClickListener()
+        builder.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)

@@ -9,8 +9,8 @@
     <string name="author_name" translatable="false">Piero Collevecchio</string>
     <string name="title_activity_maps">Map</string>
     <string name="track_name_inputbox_title">Insert track name</string>
-    <string name="track_name_inputbox_ok">OK</string>
-    <string name="track_name_inputbox_cancel">Cancel</string>
+    <string name="alert_ok">OK</string>
+    <string name="alert_cancel">Cancel</string>
     <string name="adapter_tracciato_num_boe">Number of buoys:</string>
     <string name="activity_main_drawer_track_list">Track list</string>
     <string name="activity_main_drawer_info">Info</string>

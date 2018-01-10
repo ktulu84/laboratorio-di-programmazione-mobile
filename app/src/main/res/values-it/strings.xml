@@ -7,8 +7,8 @@
     <string name="author">Autore</string>
     <string name="title_activity_maps">Mappa</string>
     <string name="track_name_inputbox_title">Inserisci nome tracciato</string>
-    <string name="track_name_inputbox_ok">OK</string>
-    <string name="track_name_inputbox_cancel">Annulla</string>
+    <string name="alert_ok">OK</string>
+    <string name="alert_cancel">Annulla</string>
     <string name="adapter_tracciato_num_boe">Numero di boe:</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="activity_main_drawer_track_list">Lista tracciati</string>
