@@ -43,8 +43,8 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"
-            android:theme="@style/AppTheme"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="it.univaq.ing.myshiprace.MainActivity" />
@@ -52,11 +52,19 @@
         <activity
             android:name=".TrackActivity"
             android:label="@string/title_activity_new_track"
-            android:theme="@style/AppTheme"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="it.univaq.ing.myshiprace.MainActivity" />
+        </activity>
+        <activity
+            android:name=".BoaActivity"
+            android:parentActivityName=".TrackActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="it.univaq.ing.myshiprace.TrackActivity" />
         </activity>
     </application>
 
