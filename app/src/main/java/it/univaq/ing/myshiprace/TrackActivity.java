@@ -21,16 +21,26 @@ import it.univaq.ing.myshiprace.model.RaceTrack;
 
 public class TrackActivity extends AppCompatActivity
 {
-    private static RaceTrack rt;
+    private RaceTrack rt;
     RecyclerView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
         setContentView(R.layout.activity_track);
-        String trackJSON = intent.getStringExtra("track_object");
+        String trackJSON;
+
+        if (savedInstanceState != null)
+        {
+            trackJSON = savedInstanceState.getString("track_object");
+        }
+        else
+        {
+            Intent intent = getIntent();
+            trackJSON = intent.getStringExtra("track_object");
+        }
+
         if (trackJSON != null)
         {
             rt = RaceTrack.parseJSON(trackJSON);
@@ -118,5 +128,12 @@ public class TrackActivity extends AppCompatActivity
         });
 
         adb.show();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putString("track_object", rt.toJSONArray().toString());
     }
 }
