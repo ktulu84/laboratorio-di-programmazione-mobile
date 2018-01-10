@@ -49,8 +49,8 @@ public class FragmentList extends Fragment
         List<RaceTrack> raceTracks = new ArrayList<>();
         RecyclerView list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
-//        list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
 
+        //TODO add real data
         for (int i = 0; i < 12; ++i)
         {
             RaceTrack rt = new RaceTrack("Prova " + i);
@@ -71,7 +71,7 @@ public class FragmentList extends Fragment
         builder.setTitle(R.string.track_name_inputbox_title);
 
         final EditText input = new EditText(context);
-//        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         builder.setView(input);
 
         builder.setPositiveButton(R.string.track_name_inputbox_ok, new DialogInterface.OnClickListener()
