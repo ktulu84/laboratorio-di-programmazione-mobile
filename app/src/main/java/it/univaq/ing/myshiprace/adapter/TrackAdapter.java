@@ -1,16 +1,17 @@
 package it.univaq.ing.myshiprace.adapter;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.R;
+import it.univaq.ing.myshiprace.TrackActivity;
 import it.univaq.ing.myshiprace.model.RaceTrack;
 
 /**
@@ -75,8 +76,10 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
         @Override
         public void onClick(View v)
         {
-
-            Toast.makeText(v.getContext(), "Hai cliccato la posizione " + getAdapterPosition(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(v.getContext(), TrackActivity.class);
+            RaceTrack rt = data.get(getAdapterPosition());
+            intent.putExtra("track_object", rt.toJSONArray().toString());
+            v.getContext().startActivity(intent);
         }
 
 
