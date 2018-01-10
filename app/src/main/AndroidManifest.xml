@@ -50,7 +50,7 @@
                 android:value="it.univaq.ing.myshiprace.MainActivity" />
         </activity>
         <activity
-            android:name=".NewTrackActivity"
+            android:name=".TrackActivity"
             android:label="@string/title_activity_new_track"
             android:theme="@style/AppTheme"
             android:parentActivityName=".MainActivity">
