@@ -22,7 +22,7 @@
 
             <TextView
                 android:id="@+id/adapter_boa_etichetta_order"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/order" />
 
@@ -30,6 +30,10 @@
                 android:id="@+id/adapter_boa_order"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/adapter_boa_etichetta_order"
+                android:layout_toRightOf="@id/adapter_boa_etichetta_order"
+                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:text="1" />
 
             <TextView
