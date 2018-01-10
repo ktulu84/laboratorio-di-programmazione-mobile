@@ -80,7 +80,8 @@ public class FragmentList extends Fragment
             public void onClick(DialogInterface dialog, int which)
             {
                 Intent intent = new Intent(context, TrackActivity.class);
-                intent.putExtra("track_name", input.getText().toString());
+                RaceTrack rt = new RaceTrack(input.getText().toString());
+                intent.putExtra("track_object", rt.toJSONArray().toString());
                 context.startActivity(intent);
             }
         });
