@@ -7,12 +7,11 @@
 
     tools:context="it.univaq.ing.myshiprace.TrackActivity">
 
-    <TextView
-        android:id="@+id/activity_new_track_placeholder"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/boa_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_horizontal_margin"
-        android:text="placeholder" />
+        android:layout_height="match_parent"
+        tools:listitem="@layout/adapter_boa" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/activity_new_track_fab"
