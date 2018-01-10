@@ -5,9 +5,11 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +20,8 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.univaq.ing.myshiprace.Util.ClickListener;
+import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
 import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.RaceTrack;
@@ -29,6 +33,8 @@ import it.univaq.ing.myshiprace.model.RaceTrack;
 public class FragmentList extends Fragment
 {
     private Context context;
+    private List<RaceTrack> raceTracks;
+    private RecyclerView list;
 
     @Nullable
     @Override
@@ -46,20 +52,40 @@ public class FragmentList extends Fragment
             }
         });
 
-        List<RaceTrack> raceTracks = new ArrayList<>();
-        RecyclerView list = view.findViewById(R.id.track_list);
+        raceTracks = new ArrayList<>();
+        list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
         //TODO add real data
         for (int i = 0; i < 12; ++i)
         {
             RaceTrack rt = new RaceTrack("Prova " + i);
-            Boa b = new Boa(12.1, 12.4, i + 1);
+            Boa b = new Boa(12.1, 12.4, 1);
             b.setId(i);
             rt.addBoa(b);
+            Boa b1 = new Boa(54.1, 74.56, 2);
+            rt.addBoa(b1);
             raceTracks.add(rt);
         }
 
+        list.addOnItemTouchListener(new RecyclerTouchListener(context,
+                list, new ClickListener()
+        {
+            @Override
+            public void onClick(View view, final int position)
+            {
+                Intent intent = new Intent(view.getContext(), TrackActivity.class);
+                RaceTrack rt = raceTracks.get(position);
+                intent.putExtra("track_object", rt.toJSONArray().toString());
+                view.getContext().startActivity(intent);
+            }
+
+            @Override
+            public void onLongClick(View view, int position)
+            {
+                deleteTrack(view, position);
+            }
+        }));
         list.setAdapter(new TrackAdapter(raceTracks));
 
         return view;
@@ -95,5 +121,46 @@ public class FragmentList extends Fragment
             }
         });
         builder.show();
+    }
+
+    private void deleteTrack(final View v, final int position)
+    {
+        AlertDialog.Builder adb = new AlertDialog.Builder(v.getContext());
+        adb.setTitle(R.string.alert_track_remove);
+        adb.setIcon(R.drawable.ic_warning);
+
+        adb.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                final RaceTrack temp = raceTracks.get(position);
+                raceTracks.remove(position);
+                list.getAdapter().notifyItemRemoved(position);
+                list.getAdapter().notifyItemRangeChanged(0, raceTracks.size());
+                Snackbar.make(v, R.string.track_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
+                {
+
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Snackbar snackbar1 = Snackbar.make(view, R.string.undo_track_delete, Snackbar.LENGTH_LONG);
+                        snackbar1.show();
+                        raceTracks.add(position, temp);
+                        list.getAdapter().notifyItemInserted(position);
+                        list.getAdapter().notifyItemRangeChanged(0, raceTracks.size());
+                    }
+                }).setActionTextColor(Color.RED).show();
+            }
+        });
+
+        adb.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+
+            }
+        });
+
+        adb.show();
     }
 }

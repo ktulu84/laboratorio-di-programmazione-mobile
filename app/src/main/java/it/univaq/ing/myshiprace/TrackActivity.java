@@ -1,11 +1,12 @@
 package it.univaq.ing.myshiprace;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.BoaAdapter;
+import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.RaceTrack;
 
 public class TrackActivity extends AppCompatActivity
@@ -71,22 +73,33 @@ public class TrackActivity extends AppCompatActivity
 
     }
 
-    private void deleteBoa(View v, final int position)
+    private void deleteBoa(final View v, final int position)
     {
         AlertDialog.Builder adb = new AlertDialog.Builder(v.getContext());
         adb.setTitle(R.string.alert_boa_remove);
         adb.setIcon(R.drawable.ic_warning);
 
-        final Context context = v.getContext();
         adb.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
         {
             public void onClick(DialogInterface dialog, int which)
             {
+                final Boa temp = rt.getBoa(position);
                 rt.removeBoa(position);
-                Toast.makeText(context, "Cliccato OK", Toast.LENGTH_SHORT).show();
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, rt.length());
-                ;
+                Snackbar.make(v, R.string.buoy_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
+                {
+
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Snackbar snackbar1 = Snackbar.make(view, R.string.undo_buoy_remove, Snackbar.LENGTH_LONG);
+                        snackbar1.show();
+                        rt.addBoa(temp);
+                        list.getAdapter().notifyItemInserted(position);
+                        list.getAdapter().notifyItemRangeChanged(0, rt.length());
+                    }
+                }).setActionTextColor(Color.RED).show();
             }
         });
 

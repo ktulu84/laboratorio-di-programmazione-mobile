@@ -1,6 +1,5 @@
 package it.univaq.ing.myshiprace.adapter;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.R;
-import it.univaq.ing.myshiprace.TrackActivity;
 import it.univaq.ing.myshiprace.model.RaceTrack;
 
 /**
@@ -24,7 +22,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
 
     public TrackAdapter(List<RaceTrack> tracks)
     {
-
         if (tracks != null)
         {
             data = tracks;
@@ -33,7 +30,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
         {
             data = new ArrayList<>();
         }
-
     }
 
     @Override
@@ -46,12 +42,10 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-
         RaceTrack item = data.get(position);
         if (item == null) return;
         holder.title.setText(item.getTrackName());
         holder.subtitle.setText(String.valueOf(item.length()));
-
     }
 
     @Override
@@ -60,9 +54,8 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
         return data.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+    class ViewHolder extends RecyclerView.ViewHolder
     {
-
         TextView title, subtitle;
 
         ViewHolder(View itemView)
@@ -70,19 +63,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
             super(itemView);
             title = itemView.findViewById(R.id.adapter_tracciato_text_name);
             subtitle = itemView.findViewById(R.id.adapter_tracciato_num_boe);
-            itemView.setOnClickListener(this);
         }
-
-        @Override
-        public void onClick(View v)
-        {
-            Intent intent = new Intent(v.getContext(), TrackActivity.class);
-            RaceTrack rt = data.get(getAdapterPosition());
-            intent.putExtra("track_object", rt.toJSONArray().toString());
-            v.getContext().startActivity(intent);
-        }
-
-
-
     }
 }

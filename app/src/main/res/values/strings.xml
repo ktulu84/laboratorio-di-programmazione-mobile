@@ -19,4 +19,10 @@
     <string name="longitude">Longitude</string>
     <string name="order">Order</string>
     <string name="alert_boa_remove">Remove selected buoy?</string>
+    <string name="track_removed_text">Track removed</string>
+    <string name="undo_track_delete">Track restored</string>
+    <string name="buoy_removed_text">Buoy removed</string>
+    <string name="undo_buoy_remove">Buoy restored</string>
+    <string name="undo_snackbar">UNDO</string>
+    <string name="alert_track_remove">Remove selected track?</string>
 </resources>
