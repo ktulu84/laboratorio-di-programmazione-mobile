@@ -69,6 +69,7 @@ public class BoaAdapter extends RecyclerView.Adapter<BoaAdapter.ViewHolder>
             latitude = itemView.findViewById(R.id.adapter_boa_latitude);
             longitude = itemView.findViewById(R.id.adapter_boa_longitude);
             order = itemView.findViewById(R.id.adapter_boa_order);
+            itemView.setOnClickListener(this);
         }
 
         @Override
@@ -77,6 +78,5 @@ public class BoaAdapter extends RecyclerView.Adapter<BoaAdapter.ViewHolder>
 
             Toast.makeText(v.getContext(), "Hai cliccato la posizione " + getAdapterPosition(), Toast.LENGTH_SHORT).show();
         }
-
     }
 }
