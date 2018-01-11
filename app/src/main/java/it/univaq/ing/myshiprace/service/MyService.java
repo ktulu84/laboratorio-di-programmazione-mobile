@@ -27,6 +27,12 @@ public class MyService extends IntentService
     public static final String ACTION_SAVE = "action_save";
     public static final String ACTION_GETALL_TRACKS = "action_get_all_tracks";
     public static final String ACTION_SAVE_UPDATE = "action_save_update";
+    public static final String ACTION_DELETE = "action_delete";
+    public static final String TYPE_BOA = "boa";
+    public static final String TYPE_TRACK = "track";
+    public static final String TYPE_SHIP = "ship";
+    public static final String TYPE = "type";
+
 
     private static final String NAME = MyService.class.getSimpleName();
 
@@ -40,26 +46,75 @@ public class MyService extends IntentService
     {
         if (intent != null && intent.getAction() != null)
         {
-
             String action = intent.getAction();
+            String type;
             switch (action)
             {
                 //TODO
                 case ACTION_SAVE:
-                    String type = intent.getStringExtra("type");
-
-                    saveInDB(new Boa());
+                    type = intent.getStringExtra(TYPE);
+                    switch (type)
+                    {
+                        case TYPE_BOA:
+                            saveInDB(new Boa());
+                            break;
+                        case TYPE_TRACK:
+                            saveInDB(new Track());
+                            break;
+                        case TYPE_SHIP:
+                            saveInDB(new ShipPosition());
+                    }
                     break;
-
                 case ACTION_GETALL_TRACKS:
-                    getFromDB();
+                    getTracksFromDB();
                     break;
                 //TODO
                 case ACTION_SAVE_UPDATE:
-                    saveOrUpdateInDB(new Boa());
+                    type = intent.getStringExtra(TYPE);
+                    switch (type)
+                    {
+                        case TYPE_BOA:
+                            saveOrUpdateInDB(new Boa());
+                            break;
+                        case TYPE_TRACK:
+                            saveOrUpdateInDB(new Track());
+                            break;
+                        case TYPE_SHIP:
+                            saveOrUpdateInDB(new ShipPosition());
+                    }
+                    break;
+                //TODO
+                case ACTION_DELETE:
+                    type = intent.getStringExtra(TYPE);
+                    switch (type)
+                    {
+                        case TYPE_BOA:
+                            deleteInDB(new Boa());
+                            break;
+                        case TYPE_TRACK:
+                            deleteInDB(new Track());
+                            break;
+                        case TYPE_SHIP:
+                            deleteInDB(new ShipPosition());
+                    }
                     break;
             }
         }
+    }
+
+    private void deleteInDB(ShipPosition shipPosition)
+    {
+        DBHelper.get(getApplicationContext()).delete(shipPosition);
+    }
+
+    private void deleteInDB(Track track)
+    {
+        DBHelper.get(getApplicationContext()).delete(track);
+    }
+
+    private void deleteInDB(Boa boa)
+    {
+        DBHelper.get(getApplicationContext()).delete(boa);
     }
 
     private void saveOrUpdateInDB(Boa boa)
@@ -95,9 +150,8 @@ public class MyService extends IntentService
         DBHelper.get(getApplicationContext()).save(shipPosition);
     }
 
-    private void getFromDB()
+    private void getTracksFromDB()
     {
-
         List<Track> tracks = DBHelper.get(getApplicationContext()).getAllTracks();
 
         Intent intent = new Intent(FragmentList.ACTION_SERVICE_DB_GET_ALL_TRACKS);
