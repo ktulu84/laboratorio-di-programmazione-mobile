@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.Database.DBHelper;
@@ -36,6 +35,17 @@ public class FragmentList extends Fragment
     private List<Track> tracks;
     private RecyclerView list;
 
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (context != null)
+        {
+            tracks = DBHelper.get(context).getAllTracks();
+            list.setAdapter(new TrackAdapter(tracks));
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
@@ -52,25 +62,26 @@ public class FragmentList extends Fragment
             }
         });
 
+        tracks = DBHelper.get(context).getAllTracks();
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        if (savedInstanceState == null)
-        {
-            tracks = DBHelper.get(view.getContext()).getAllTracks();
-        }
-        else
-        {
-            tracks = new ArrayList<>();
-            int i = 0;
-            String track = savedInstanceState.getString("track " + i);
-            while (track != null)
-            {
-                tracks.add(Track.parseJSON(track));
-                ++i;
-                track = savedInstanceState.getString("track " + i);
-            }
-        }
+//        if (savedInstanceState == null)
+//        {
+
+//        }
+//        else
+//        {
+//            tracks = new ArrayList<>();
+//            int i = 0;
+//            String track = savedInstanceState.getString("track " + i);
+//            while (track != null)
+//            {
+//                tracks.add(Track.parseJSON(track));
+//                ++i;
+//                track = savedInstanceState.getString("track " + i);
+//            }
+//        }
 
         list.addOnItemTouchListener(new RecyclerTouchListener(context,
                 list, new ClickListener()
@@ -142,6 +153,7 @@ public class FragmentList extends Fragment
                 final Track temp = tracks.get(position);
                 tracks.remove(position);
                 DBHelper.get(v.getContext()).delete(temp);
+
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, tracks.size());
                 Snackbar.make(v, R.string.track_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()

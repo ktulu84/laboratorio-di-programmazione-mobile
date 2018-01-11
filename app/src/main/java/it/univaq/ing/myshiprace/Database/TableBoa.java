@@ -37,7 +37,7 @@ public class TableBoa
                 LONGITUDE + " NUMERIC, " +
                 TRACK_ID + " INTEGER, " +
                 "FOREIGN KEY(" + TRACK_ID + ") " +
-                "REFERENCES " + TableTrack.TABLE_NAME + "(" + TableTrack.ID + ")" +
+                "REFERENCES " + TableTrack.TABLE_NAME + "(" + TableTrack.ID + ") ON DELETE CASCADE" +
                 ")";
         db.execSQL(sql);
     }
@@ -144,5 +144,37 @@ public class TableBoa
         }
 
         return boa;
+    }
+
+    public static List<Boa> getByTrackID(SQLiteDatabase db, int id)
+    {
+        List<Boa> boas = new ArrayList<>();
+
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE " + TRACK_ID + " = " + id + " ORDER BY " + ORDER + " ASC";
+        Cursor cursor = null;
+        try
+        {
+            cursor = db.rawQuery(sql, null);
+            while (cursor.moveToNext())
+            {
+                Boa boa = new Boa();
+                boa.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
+                boa.setOrder(cursor.getInt(cursor.getColumnIndex(ORDER)));
+                boa.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
+                boa.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+                boa.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
+                boas.add(boa);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (cursor != null) cursor.close();
+        }
+
+        return boas;
     }
 }

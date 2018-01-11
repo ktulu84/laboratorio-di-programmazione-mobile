@@ -55,6 +55,7 @@ public class TableTrack
         long id = db.insert(TABLE_NAME, null, values);
         for (Boa b : track.getBoas())
         {
+            b.setTrackID((int) id);
             TableBoa.save(db, b);
         }
         if (id != -1) track.setId((int) id);
@@ -66,12 +67,22 @@ public class TableTrack
         ContentValues values = new ContentValues();
         values.put(TRACK_NAME, track.getTrackName());
 //        int rows = db.update(TABLE_NAME, values, ID +"= ?", new String[]{ String.valueOf(shipPosition.getId())} );
+        for (Boa b : track.getBoas())
+        {
+            if (b.getId() == -1)
+            {
+                TableBoa.save(db, b);
+            }
+            else
+            {
+                TableBoa.update(db, b);
+            }
+        }
         return db.update(TABLE_NAME, values, ID + "=" + track.getId(), null) == 1;
     }
 
     public static boolean delete(SQLiteDatabase db, Track track)
     {
-
         return db.delete(TABLE_NAME, ID + "=" + track.getId(), null) == 1;
     }
 
@@ -90,17 +101,10 @@ public class TableTrack
                 Track track = new Track();
                 track.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
                 track.setTrackName(cursor.getString(cursor.getColumnIndex(TRACK_NAME)));
-                sql = "SELECT * FROM " + TableBoa.TABLE_NAME + " WHERE " + TableBoa.TRACK_ID + "=" + track.getId();
-                Cursor cursor2 = db.rawQuery(sql, null);
-                while (cursor2.moveToNext())
+                List<Boa> boas = TableBoa.getByTrackID(db, track.getId());
+                for (Boa b : boas)
                 {
-                    Boa boa = new Boa();
-                    boa.setId((int) cursor2.getLong(cursor2.getColumnIndex(TableBoa.ID)));
-                    boa.setOrder(cursor2.getInt(cursor2.getColumnIndex(TableBoa.ORDER)));
-                    boa.setLatitude(cursor2.getDouble(cursor2.getColumnIndex(TableBoa.LATITUDE)));
-                    boa.setLongitude(cursor2.getDouble(cursor2.getColumnIndex(TableBoa.LONGITUDE)));
-                    boa.setTrackID(cursor2.getInt(cursor2.getColumnIndex(TableBoa.TRACK_ID)));
-                    track.addBoa(boa);
+                    track.addBoa(b);
                 }
                 tracks.add(track);
             }

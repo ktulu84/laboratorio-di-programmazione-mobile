@@ -22,6 +22,7 @@ public class Track
             JSONArray array = new JSONArray(jsonarray);
             JSONObject jsonObject = array.getJSONObject(0);
             r = new Track(jsonObject.getString("track_name"));
+            r.setId(jsonObject.getInt("track_id"));
 
             for (int i = 1; i < array.length(); i++)
             {
@@ -133,17 +134,18 @@ public class Track
     public JSONArray toJSONArray()
     {
         JSONArray jsonArray = new JSONArray();
-        JSONObject trackName = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         try
         {
-            trackName.put("track_name", this.getTrackName());
+            jsonObject.put("track_name", this.getTrackName());
+            jsonObject.put("track_id", this.getId());
         }
         catch (JSONException e)
         {
             e.printStackTrace();
             return null;
         }
-        jsonArray.put(trackName);
+        jsonArray.put(jsonObject);
         for (int i = 0; i < length(); ++i)
         {
             JSONObject boaJSON = getBoa(i).toJSONObject();

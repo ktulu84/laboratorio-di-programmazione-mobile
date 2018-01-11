@@ -1,6 +1,7 @@
 package it.univaq.ing.myshiprace;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -12,7 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.EditText;
 
+import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.BoaAdapter;
@@ -79,14 +82,14 @@ public class TrackActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view)
                 {
-
-                    Boa b = new Boa();
-                    b.setLatitude(58.1);
-                    b.setLongitude(73.34);
-                    b.setOrder(1);
-                    b.setTrackID(rt.getId());
-                    rt.addBoa(b);
-                    list.getAdapter().notifyDataSetChanged();
+                    showDialog();
+//                    Boa b = new Boa();
+//                    b.setLatitude(58.1);
+//                    b.setLongitude(73.34);
+//                    b.setOrder(1);
+//                    b.setTrackID(rt.getId());
+//                    rt.addBoa(b);
+//                    list.getAdapter().notifyDataSetChanged();
 //                    Intent intent = new Intent(view.getContext(), BoaActivity.class);
 //                    intent.putExtra("boa_object", b.toJSONObject().toString());
 //                    view.getContext().startActivity(intent);
@@ -108,6 +111,7 @@ public class TrackActivity extends AppCompatActivity
             {
                 final Boa temp = rt.getBoa(position);
                 rt.removeBoa(position);
+                DBHelper.get(v.getContext()).delete(temp);
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, rt.length());
                 Snackbar.make(v, R.string.buoy_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
@@ -119,6 +123,7 @@ public class TrackActivity extends AppCompatActivity
                         Snackbar snackbar1 = Snackbar.make(view, R.string.undo_buoy_remove, Snackbar.LENGTH_LONG);
                         snackbar1.show();
                         rt.addBoa(temp);
+                        DBHelper.get(v.getContext()).save(temp);
                         list.getAdapter().notifyItemInserted(position);
                         list.getAdapter().notifyItemRangeChanged(0, rt.length());
                     }
@@ -144,35 +149,48 @@ public class TrackActivity extends AppCompatActivity
         outState.putString("track_object", rt.toJSONArray().toString());
     }
 
-//    private void showDialog()
-//    {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setTitle(R.string.track_name_inputbox_title);
-//        View layout =
-//        builder.setView(input);
-//
-//        builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
-//        {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which)
-//            {
+    private void showDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.track_name_inputbox_title);
+        final View layout = getLayoutInflater().inflate(R.layout.alert_new_boa, null);
+        final Context context = this;
+        builder.setView(layout);
+
+        builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                EditText latitudeText = layout.findViewById(R.id.alert_new_boa_latitude);
+                EditText longitudeText = layout.findViewById(R.id.alert_new_boa_longitude);
+                EditText orderText = layout.findViewById(R.id.alert_new_boa_order);
+                double latitude = Double.valueOf(latitudeText.getText().toString());
+                double longitude = Double.valueOf(longitudeText.getText().toString());
+                int order = Integer.valueOf(orderText.getText().toString());
+                Boa b = new Boa(latitude, longitude);
+                b.setTrackID(rt.getId());
+                b.setOrder(order);
+                rt.addBoa(b);
+                DBHelper.get(context).saveOrUpdate(rt);
+                list.getAdapter().notifyDataSetChanged();
 //                Intent intent = new Intent(context, TrackActivity.class);
 //                Track rt = new Track(input.getText().toString());
 //                DBHelper.get(context).saveOrUpdate(rt);
 //                tracks.add(rt);
 //                intent.putExtra("track_object", rt.toJSONArray().toString());
 //                context.startActivity(intent);
-//            }
-//        });
-//
-//        builder.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
-//        {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which)
-//            {
-//                dialog.cancel();
-//            }
-//        });
-//        builder.show();
-//    }
+            }
+        });
+
+        builder.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
 }
