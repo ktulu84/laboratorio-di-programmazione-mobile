@@ -58,6 +58,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="it.univaq.ing.myshiprace.MainActivity" />
         </activity>
+
+        <service android:name=".service.MyService" />
         <activity
             android:name=".BoaActivity"
             android:parentActivityName=".TrackActivity"

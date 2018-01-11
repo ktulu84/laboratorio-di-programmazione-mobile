@@ -14,6 +14,25 @@ import java.util.List;
 
 public class Track
 {
+    public static List<Track> fromJSONArray(String jsonString)
+    {
+        List<Track> tracks = new ArrayList<>();
+        try
+        {
+            JSONArray jsonArray = new JSONArray(jsonString);
+            for (int i = 0; i < jsonArray.length(); ++i)
+            {
+                JSONArray array = jsonArray.getJSONArray(i);
+                tracks.add(Track.parseJSON(array.toString()));
+            }
+        }
+        catch (JSONException e)
+        {
+            tracks = new ArrayList<>();
+        }
+        return tracks;
+    }
+
     public static Track parseJSON(String jsonarray)
     {
         Track r = null;
@@ -129,6 +148,17 @@ public class Track
     public Boa getBoa(int pos)
     {
         return trackPath.get(pos);
+    }
+
+    public static JSONArray toJSONArray(List<Track> tracks)
+    {
+        JSONArray jsonArray = new JSONArray();
+        for (Track track : tracks)
+        {
+            JSONArray item = track.toJSONArray();
+            if (item != null) jsonArray.put(item);
+        }
+        return jsonArray;
     }
 
     public JSONArray toJSONArray()

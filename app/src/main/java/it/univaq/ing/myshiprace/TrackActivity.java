@@ -83,16 +83,6 @@ public class TrackActivity extends AppCompatActivity
                 public void onClick(View view)
                 {
                     showDialog();
-//                    Boa b = new Boa();
-//                    b.setLatitude(58.1);
-//                    b.setLongitude(73.34);
-//                    b.setOrder(1);
-//                    b.setTrackID(rt.getId());
-//                    rt.addBoa(b);
-//                    list.getAdapter().notifyDataSetChanged();
-//                    Intent intent = new Intent(view.getContext(), BoaActivity.class);
-//                    intent.putExtra("boa_object", b.toJSONObject().toString());
-//                    view.getContext().startActivity(intent);
                 }
             });
         }

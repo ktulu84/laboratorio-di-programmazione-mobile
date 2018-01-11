@@ -2,14 +2,17 @@ package it.univaq.ing.myshiprace;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,6 +27,7 @@ import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
 import it.univaq.ing.myshiprace.model.Track;
+import it.univaq.ing.myshiprace.service.MyService;
 
 /**
  * Created by ktulu on 15/12/17.
@@ -31,19 +35,55 @@ import it.univaq.ing.myshiprace.model.Track;
 
 public class FragmentList extends Fragment
 {
+    //    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
+    public static final String ACTION_SERVICE_DB_GET_ALL_TRACKS = "action_service_db_get_all_tracks";
     private Context context;
     private List<Track> tracks;
     private RecyclerView list;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            if (intent == null || intent.getAction() == null) return;
+
+            switch (intent.getAction())
+            {
+                case ACTION_SERVICE_DB_GET_ALL_TRACKS:
+
+                    String data = intent.getStringExtra("data");
+                    if (data != null)
+                    {
+                        tracks = Track.fromJSONArray(data);
+                        TrackAdapter adapter = new TrackAdapter(tracks);
+                        list.setAdapter(adapter);
+                    }
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onResume()
     {
         super.onResume();
-        if (context != null)
-        {
-            tracks = DBHelper.get(context).getAllTracks();
-            list.setAdapter(new TrackAdapter(tracks));
-        }
+
+        IntentFilter filter = new IntentFilter(ACTION_SERVICE_DB_GET_ALL_TRACKS);
+//        filter.addAction(ACTION_SERVICE_DB_GET_ALL_TRACKS);
+        Context c = getActivity().getApplicationContext();
+        LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+
+        Intent newIntent = new Intent(c, MyService.class);
+        newIntent.setAction(MyService.ACTION_GETALL_TRACKS);
+        getActivity().startService(newIntent);
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(receiver);
     }
 
     @Nullable
@@ -62,26 +102,9 @@ public class FragmentList extends Fragment
             }
         });
 
-        tracks = DBHelper.get(context).getAllTracks();
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
-
-//        if (savedInstanceState == null)
-//        {
-
-//        }
-//        else
-//        {
-//            tracks = new ArrayList<>();
-//            int i = 0;
-//            String track = savedInstanceState.getString("track " + i);
-//            while (track != null)
-//            {
-//                tracks.add(Track.parseJSON(track));
-//                ++i;
-//                track = savedInstanceState.getString("track " + i);
-//            }
-//        }
+        list.setAdapter(new TrackAdapter());
 
         list.addOnItemTouchListener(new RecyclerTouchListener(context,
                 list, new ClickListener()
@@ -101,7 +124,6 @@ public class FragmentList extends Fragment
                 deleteTrack(view, position);
             }
         }));
-        list.setAdapter(new TrackAdapter(tracks));
 
         return view;
     }
@@ -182,15 +204,5 @@ public class FragmentList extends Fragment
         });
 
         adb.show();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-        for (int i = 0; i < tracks.size(); ++i)
-        {
-            outState.putString("track " + i, tracks.get(i).toJSONArray().toString());
-        }
     }
 }
