@@ -24,7 +24,7 @@ import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
 import it.univaq.ing.myshiprace.model.Boa;
-import it.univaq.ing.myshiprace.model.RaceTrack;
+import it.univaq.ing.myshiprace.model.Track;
 
 /**
  * Created by ktulu on 15/12/17.
@@ -33,7 +33,7 @@ import it.univaq.ing.myshiprace.model.RaceTrack;
 public class FragmentList extends Fragment
 {
     private Context context;
-    private List<RaceTrack> raceTracks;
+    private List<Track> tracks;
     private RecyclerView list;
 
     @Nullable
@@ -52,7 +52,7 @@ public class FragmentList extends Fragment
             }
         });
 
-        raceTracks = new ArrayList<>();
+        tracks = new ArrayList<>();
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
@@ -61,13 +61,13 @@ public class FragmentList extends Fragment
             //TODO add real data
             for (int i = 0; i < 12; ++i)
             {
-                RaceTrack rt = new RaceTrack("Prova " + i);
+                Track rt = new Track("Prova " + i);
                 Boa b = new Boa(12.1, 12.4, 1);
                 b.setId(i);
                 rt.addBoa(b);
                 Boa b1 = new Boa(54.1, 74.56, 2);
                 rt.addBoa(b1);
-                raceTracks.add(rt);
+                tracks.add(rt);
             }
         }
         else
@@ -76,7 +76,7 @@ public class FragmentList extends Fragment
             String track = savedInstanceState.getString("track " + i);
             while (track != null)
             {
-                raceTracks.add(RaceTrack.parseJSON(track));
+                tracks.add(Track.parseJSON(track));
                 ++i;
                 track = savedInstanceState.getString("track " + i);
             }
@@ -90,7 +90,7 @@ public class FragmentList extends Fragment
             public void onClick(View view, final int position)
             {
                 Intent intent = new Intent(view.getContext(), TrackActivity.class);
-                RaceTrack rt = raceTracks.get(position);
+                Track rt = tracks.get(position);
                 intent.putExtra("track_object", rt.toJSONArray().toString());
                 view.getContext().startActivity(intent);
             }
@@ -101,7 +101,7 @@ public class FragmentList extends Fragment
                 deleteTrack(view, position);
             }
         }));
-        list.setAdapter(new TrackAdapter(raceTracks));
+        list.setAdapter(new TrackAdapter(tracks));
 
         return view;
     }
@@ -121,7 +121,7 @@ public class FragmentList extends Fragment
             public void onClick(DialogInterface dialog, int which)
             {
                 Intent intent = new Intent(context, TrackActivity.class);
-                RaceTrack rt = new RaceTrack(input.getText().toString());
+                Track rt = new Track(input.getText().toString());
                 intent.putExtra("track_object", rt.toJSONArray().toString());
                 context.startActivity(intent);
             }
@@ -148,10 +148,10 @@ public class FragmentList extends Fragment
         {
             public void onClick(DialogInterface dialog, int which)
             {
-                final RaceTrack temp = raceTracks.get(position);
-                raceTracks.remove(position);
+                final Track temp = tracks.get(position);
+                tracks.remove(position);
                 list.getAdapter().notifyItemRemoved(position);
-                list.getAdapter().notifyItemRangeChanged(0, raceTracks.size());
+                list.getAdapter().notifyItemRangeChanged(0, tracks.size());
                 Snackbar.make(v, R.string.track_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
                 {
 
@@ -160,9 +160,9 @@ public class FragmentList extends Fragment
                     {
                         Snackbar snackbar1 = Snackbar.make(view, R.string.undo_track_delete, Snackbar.LENGTH_LONG);
                         snackbar1.show();
-                        raceTracks.add(position, temp);
+                        tracks.add(position, temp);
                         list.getAdapter().notifyItemInserted(position);
-                        list.getAdapter().notifyItemRangeChanged(0, raceTracks.size());
+                        list.getAdapter().notifyItemRangeChanged(0, tracks.size());
                     }
                 }).setActionTextColor(Color.RED).show();
             }
@@ -183,9 +183,9 @@ public class FragmentList extends Fragment
     public void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        for (int i = 0; i < raceTracks.size(); ++i)
+        for (int i = 0; i < tracks.size(); ++i)
         {
-            outState.putString("track " + i, raceTracks.get(i).toJSONArray().toString());
+            outState.putString("track " + i, tracks.get(i).toJSONArray().toString());
         }
     }
 }

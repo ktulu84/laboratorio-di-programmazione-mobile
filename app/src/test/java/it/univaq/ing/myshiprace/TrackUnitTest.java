@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import it.univaq.ing.myshiprace.model.Boa;
-import it.univaq.ing.myshiprace.model.RaceTrack;
+import it.univaq.ing.myshiprace.model.Track;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,15 +15,15 @@ import static org.junit.Assert.assertTrue;
  */
 
 
-public class RaceTrackUnitTest
+public class TrackUnitTest
 {
-    RaceTrack r;
+    Track r;
     Boa b;
 
     @Before
     public void init()
     {
-        r = new RaceTrack();
+        r = new Track();
         b = new Boa(12.1, 12.1);
     }
 

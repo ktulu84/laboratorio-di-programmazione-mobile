@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import it.univaq.ing.myshiprace.model.Boa;
-import it.univaq.ing.myshiprace.model.RaceTrack;
+import it.univaq.ing.myshiprace.model.Track;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -24,7 +24,7 @@ public class ExampleInstrumentedTest
         b1.setLatitude(42.1);
         b1.setLongitude(42.2);
         b1.setId(222);
-        RaceTrack rt = new RaceTrack("Prova");
+        Track rt = new Track("Prova");
         rt.addBoa(b1);
         Boa b2 = new Boa(12.1, 14.2, 2);
         b2.setId(111);

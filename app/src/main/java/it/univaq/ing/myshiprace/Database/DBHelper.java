@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.model.Boa;
+import it.univaq.ing.myshiprace.model.ShipPosition;
+import it.univaq.ing.myshiprace.model.Track;
 
 /**
  * MyService
@@ -48,12 +50,16 @@ public class DBHelper extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
+        TableTrack.create(db);
+        TableShipPosition.create(db);
         TableBoa.create(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
+        TableTrack.upgrade(db);
+        TableShipPosition.upgrade(db);
         TableBoa.upgrade(db);
     }
 
@@ -62,9 +68,29 @@ public class DBHelper extends SQLiteOpenHelper
         TableBoa.save(getWritableDatabase(), boa);
     }
 
+    public void save(ShipPosition shipPosition)
+    {
+        TableShipPosition.save(getWritableDatabase(), shipPosition);
+    }
+
+    public void save(Track track)
+    {
+        TableTrack.save(getWritableDatabase(), track);
+    }
+
     public void update(Boa boa)
     {
         TableBoa.update(getWritableDatabase(), boa);
+    }
+
+    public void update(ShipPosition shipPosition)
+    {
+        TableShipPosition.update(getWritableDatabase(), shipPosition);
+    }
+
+    public void update(Track track)
+    {
+        TableTrack.update(getWritableDatabase(), track);
     }
 
     public void delete(Boa boa)
@@ -72,8 +98,43 @@ public class DBHelper extends SQLiteOpenHelper
         TableBoa.delete(getWritableDatabase(), boa);
     }
 
-    public List<Boa> getAll()
+    public void delete(ShipPosition shipPosition)
+    {
+        TableShipPosition.delete(getWritableDatabase(), shipPosition);
+    }
+
+    public void delete(Track track)
+    {
+        TableTrack.delete(getWritableDatabase(), track);
+    }
+
+    public List<Boa> getAllBoas()
     {
         return TableBoa.getAll(getReadableDatabase());
+    }
+
+    public List<ShipPosition> getAllPositions()
+    {
+        return TableShipPosition.getAll(getReadableDatabase());
+    }
+
+    public List<Track> getAllTracks()
+    {
+        return TableTrack.getAll(getReadableDatabase());
+    }
+
+    public Boa getBoa(int id)
+    {
+        return TableBoa.getByID(getReadableDatabase(), id);
+    }
+
+    public ShipPosition getShipPosition(int id)
+    {
+        return TableShipPosition.getByID(getReadableDatabase(), id);
+    }
+
+    public Track getRaceTrack(int id)
+    {
+        return TableTrack.getByID(getReadableDatabase(), id);
     }
 }

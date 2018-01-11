@@ -14,11 +14,12 @@ public abstract class Position
     {
         this.latitude = latitude;
         this.longitude = longitude;
+        id = -1;
     }
 
     public Position()
     {
-
+        id = -1;
     }
 
     public double getLatitude()

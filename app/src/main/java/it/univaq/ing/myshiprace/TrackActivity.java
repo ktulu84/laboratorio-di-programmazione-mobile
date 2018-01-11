@@ -17,11 +17,11 @@ import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.BoaAdapter;
 import it.univaq.ing.myshiprace.model.Boa;
-import it.univaq.ing.myshiprace.model.RaceTrack;
+import it.univaq.ing.myshiprace.model.Track;
 
 public class TrackActivity extends AppCompatActivity
 {
-    private RaceTrack rt;
+    private Track rt;
     RecyclerView list;
 
     @Override
@@ -43,7 +43,7 @@ public class TrackActivity extends AppCompatActivity
 
         if (trackJSON != null)
         {
-            rt = RaceTrack.parseJSON(trackJSON);
+            rt = Track.parseJSON(trackJSON);
         }
         if (rt != null)
         {

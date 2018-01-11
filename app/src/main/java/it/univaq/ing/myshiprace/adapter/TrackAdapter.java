@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.R;
-import it.univaq.ing.myshiprace.model.RaceTrack;
+import it.univaq.ing.myshiprace.model.Track;
 
 /**
  * Created by ktulu on 03/11/17.
@@ -18,9 +18,9 @@ import it.univaq.ing.myshiprace.model.RaceTrack;
 
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
 {
-    private List<RaceTrack> data;
+    private List<Track> data;
 
-    public TrackAdapter(List<RaceTrack> tracks)
+    public TrackAdapter(List<Track> tracks)
     {
         if (tracks != null)
         {
@@ -42,7 +42,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-        RaceTrack item = data.get(position);
+        Track item = data.get(position);
         if (item == null) return;
         holder.title.setText(item.getTrackName());
         holder.subtitle.setText(String.valueOf(item.length()));

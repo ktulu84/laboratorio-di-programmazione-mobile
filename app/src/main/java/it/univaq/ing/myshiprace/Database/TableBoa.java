@@ -20,13 +20,13 @@ import it.univaq.ing.myshiprace.model.Boa;
 public class TableBoa
 {
 
-    private static final String TABLE_NAME = "boas";
+    static final String TABLE_NAME = "boas";
 
-    private static final String ID = "id";
-    private static final String ORDER = "order";
-    private static final String LATITUDE = "latitude";
-    private static final String LONGITUDE = "longitude";
-    private static final String TRACK_ID = "track_id";
+    static final String ID = "id";
+    static final String ORDER = "boa_order";
+    static final String LATITUDE = "latitude";
+    static final String LONGITUDE = "longitude";
+    static final String TRACK_ID = "track_id";
 
     public static void create(SQLiteDatabase db)
     {
@@ -86,7 +86,6 @@ public class TableBoa
 
     public static List<Boa> getAll(SQLiteDatabase db)
     {
-
         List<Boa> boas = new ArrayList<>();
 
         String sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + ORDER + " ASC";
@@ -115,5 +114,35 @@ public class TableBoa
         }
 
         return boas;
+    }
+
+    public static Boa getByID(SQLiteDatabase db, int id)
+    {
+        Boa boa = new Boa();
+
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE " + ID + "=" + id;
+
+        Cursor cursor = null;
+
+        try
+        {
+            cursor = db.rawQuery(sql, null);
+            cursor.moveToNext();
+            boa.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
+            boa.setOrder(cursor.getInt(cursor.getColumnIndex(ORDER)));
+            boa.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
+            boa.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+            boa.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (cursor != null) cursor.close();
+        }
+
+        return boa;
     }
 }

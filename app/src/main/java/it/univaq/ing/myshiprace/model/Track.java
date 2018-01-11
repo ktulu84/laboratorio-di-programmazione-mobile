@@ -12,16 +12,16 @@ import java.util.List;
  * Created by ktulu on 04/12/17.
  */
 
-public class RaceTrack
+public class Track
 {
-    public static RaceTrack parseJSON(String jsonarray)
+    public static Track parseJSON(String jsonarray)
     {
-        RaceTrack r = null;
+        Track r = null;
         try
         {
             JSONArray array = new JSONArray(jsonarray);
             JSONObject jsonObject = array.getJSONObject(0);
-            r = new RaceTrack(jsonObject.getString("track_name"));
+            r = new Track(jsonObject.getString("track_name"));
 
             for (int i = 1; i < array.length(); i++)
             {
@@ -64,13 +64,13 @@ public class RaceTrack
         this.id = id;
     }
 
-    public RaceTrack()
+    public Track()
     {
         trackName = "";
         trackPath = new ArrayList<>();
     }
 
-    public RaceTrack(String name)
+    public Track(String name)
     {
         trackName = name;
         trackPath = new ArrayList<>();

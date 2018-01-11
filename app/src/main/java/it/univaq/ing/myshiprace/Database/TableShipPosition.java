@@ -21,13 +21,13 @@ import it.univaq.ing.myshiprace.model.ShipPosition;
 public class TableShipPosition
 {
 
-    private static final String TABLE_NAME = "ship_position";
+    static final String TABLE_NAME = "ship_position";
 
-    private static final String ID = "id";
-    private static final String TIMESTAMP = "timestamp";
-    private static final String LATITUDE = "latitude";
-    private static final String LONGITUDE = "longitude";
-    private static final String TRACK_ID = "track_id";
+    static final String ID = "id";
+    static final String TIMESTAMP = "timestamp";
+    static final String LATITUDE = "latitude";
+    static final String LONGITUDE = "longitude";
+    static final String TRACK_ID = "track_id";
 
     public static void create(SQLiteDatabase db)
     {
@@ -116,5 +116,34 @@ public class TableShipPosition
         }
 
         return shipPositions;
+    }
+
+    public static ShipPosition getByID(SQLiteDatabase db, int id)
+    {
+        ShipPosition shipPosition = new ShipPosition();
+
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE " + ID + "=" + id;
+
+        Cursor cursor = null;
+        try
+        {
+            cursor = db.rawQuery(sql, null);
+            cursor.moveToNext();
+            shipPosition.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
+            shipPosition.setTimestamp(new Timestamp(cursor.getLong(cursor.getColumnIndex(TIMESTAMP))));
+            shipPosition.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
+            shipPosition.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+            shipPosition.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (cursor != null) cursor.close();
+        }
+
+        return shipPosition;
     }
 }
