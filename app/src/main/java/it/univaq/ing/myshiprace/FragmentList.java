@@ -37,7 +37,6 @@ public class FragmentList extends Fragment
 {
     //    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
     public static final String ACTION_SERVICE_DB_GET_ALL_TRACKS = "action_service_db_get_all_tracks";
-    public static final String ACTION_SERVICE_DB_SAVE_UPDATE_TRACK = "action_service_db_save_update_track";
     private Context context;
     private List<Track> tracks;
     private RecyclerView list;
@@ -48,12 +47,12 @@ public class FragmentList extends Fragment
         public void onReceive(Context context, Intent intent)
         {
             if (intent == null || intent.getAction() == null) return;
-            String data;
+
             switch (intent.getAction())
             {
                 case ACTION_SERVICE_DB_GET_ALL_TRACKS:
 
-                    data = intent.getStringExtra("data");
+                    String data = intent.getStringExtra("data");
                     if (data != null)
                     {
                         tracks = Track.fromJSONArray(data);
@@ -61,15 +60,6 @@ public class FragmentList extends Fragment
                         list.setAdapter(adapter);
                     }
                     break;
-                case ACTION_SERVICE_DB_SAVE_UPDATE_TRACK:
-                    data = intent.getStringExtra("data");
-                    if (data != null)
-                    {
-//                        Track track = Track.parseJSON(data);
-                        Intent newIntent = new Intent(context, TrackActivity.class);
-                        newIntent.putExtra("track_object", data);
-                        context.startActivity(newIntent);
-                    }
             }
         }
     };
@@ -80,7 +70,7 @@ public class FragmentList extends Fragment
         super.onResume();
 
         IntentFilter filter = new IntentFilter(ACTION_SERVICE_DB_GET_ALL_TRACKS);
-        filter.addAction(ACTION_SERVICE_DB_SAVE_UPDATE_TRACK);
+//        filter.addAction(ACTION_SERVICE_DB_GET_ALL_TRACKS);
         Context c = getActivity().getApplicationContext();
         LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
 
@@ -152,17 +142,12 @@ public class FragmentList extends Fragment
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-//                Intent intent = new Intent(context, TrackActivity.class);
+                Intent intent = new Intent(context, TrackActivity.class);
                 Track rt = new Track(input.getText().toString());
-//                DBHelper.get(context).saveOrUpdate(rt);
+                DBHelper.get(context).saveOrUpdate(rt);
                 tracks.add(rt);
-                Intent newIntent = new Intent(context, MyService.class);
-                newIntent.setAction(MyService.ACTION_SAVE_UPDATE);
-                newIntent.putExtra("track_object", rt.toJSONArray().toString());
-                newIntent.putExtra(MyService.TYPE, MyService.TYPE_TRACK);
-                getActivity().startService(newIntent);
-//                intent.putExtra("track_object", rt.toJSONArray().toString());
-//                context.startActivity(intent);
+                intent.putExtra("track_object", rt.toJSONArray().toString());
+                context.startActivity(intent);
             }
         });
 

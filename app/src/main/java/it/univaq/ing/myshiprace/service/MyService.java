@@ -77,8 +77,7 @@ public class MyService extends IntentService
                             saveOrUpdateInDB(new Boa());
                             break;
                         case TYPE_TRACK:
-                            Track t = Track.parseJSON(intent.getStringExtra("track_object"));
-                            saveOrUpdateInDB(t);
+                            saveOrUpdateInDB(new Track());
                             break;
                         case TYPE_SHIP:
                             saveOrUpdateInDB(new ShipPosition());
@@ -131,9 +130,6 @@ public class MyService extends IntentService
     private void saveOrUpdateInDB(Track track)
     {
         DBHelper.get(getApplicationContext()).saveOrUpdate(track);
-        Intent intent = new Intent(FragmentList.ACTION_SERVICE_DB_SAVE_UPDATE_TRACK);
-        intent.putExtra("data", track.toJSONArray().toString());
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void saveInDB(Boa boa)
@@ -157,6 +153,7 @@ public class MyService extends IntentService
     private void getTracksFromDB()
     {
         List<Track> tracks = DBHelper.get(getApplicationContext()).getAllTracks();
+
         Intent intent = new Intent(FragmentList.ACTION_SERVICE_DB_GET_ALL_TRACKS);
         intent.putExtra("data", Track.toJSONArray(tracks).toString());
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
