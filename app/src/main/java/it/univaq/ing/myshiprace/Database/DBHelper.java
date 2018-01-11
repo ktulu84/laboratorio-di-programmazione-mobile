@@ -93,6 +93,42 @@ public class DBHelper extends SQLiteOpenHelper
         TableTrack.update(getWritableDatabase(), track);
     }
 
+    public void saveOrUpdate(Boa boa)
+    {
+        if (boa.getId() == -1)
+        {
+            save(boa);
+        }
+        else
+        {
+            update(boa);
+        }
+    }
+
+    public void saveOrUpdate(ShipPosition shipPosition)
+    {
+        if (shipPosition.getId() == -1)
+        {
+            save(shipPosition);
+        }
+        else
+        {
+            update(shipPosition);
+        }
+    }
+
+    public void saveOrUpdate(Track track)
+    {
+        if (track.getId() == -1)
+        {
+            save(track);
+        }
+        else
+        {
+            update(track);
+        }
+    }
+
     public void delete(Boa boa)
     {
         TableBoa.delete(getWritableDatabase(), boa);

@@ -79,10 +79,17 @@ public class TrackActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view)
                 {
+
                     Boa b = new Boa();
-                    Intent intent = new Intent(view.getContext(), BoaActivity.class);
-                    intent.putExtra("boa_object", b.toJSONObject().toString());
-                    view.getContext().startActivity(intent);
+                    b.setLatitude(58.1);
+                    b.setLongitude(73.34);
+                    b.setOrder(1);
+                    b.setTrackID(rt.getId());
+                    rt.addBoa(b);
+                    list.getAdapter().notifyDataSetChanged();
+//                    Intent intent = new Intent(view.getContext(), BoaActivity.class);
+//                    intent.putExtra("boa_object", b.toJSONObject().toString());
+//                    view.getContext().startActivity(intent);
                 }
             });
         }
@@ -136,4 +143,36 @@ public class TrackActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
         outState.putString("track_object", rt.toJSONArray().toString());
     }
+
+//    private void showDialog()
+//    {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle(R.string.track_name_inputbox_title);
+//        View layout =
+//        builder.setView(input);
+//
+//        builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+//        {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which)
+//            {
+//                Intent intent = new Intent(context, TrackActivity.class);
+//                Track rt = new Track(input.getText().toString());
+//                DBHelper.get(context).saveOrUpdate(rt);
+//                tracks.add(rt);
+//                intent.putExtra("track_object", rt.toJSONArray().toString());
+//                context.startActivity(intent);
+//            }
+//        });
+//
+//        builder.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
+//        {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which)
+//            {
+//                dialog.cancel();
+//            }
+//        });
+//        builder.show();
+//    }
 }

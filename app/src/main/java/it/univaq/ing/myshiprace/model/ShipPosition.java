@@ -92,7 +92,7 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
         if (obj.getClass().equals(ShipPosition.class))
         {
             ShipPosition o2 = (ShipPosition) obj;
-            return latitude == o2.getLatitude() && longitude == o2.getLongitude() && timestamp.equals(o2.getTimestamp());
+            return super.equals(o2) && timestamp.equals(o2.getTimestamp()) && trackID == o2.getTrackID();
         }
         else
         {

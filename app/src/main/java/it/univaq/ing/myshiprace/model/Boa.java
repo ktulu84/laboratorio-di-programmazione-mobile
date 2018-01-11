@@ -35,6 +35,23 @@ public class Boa extends Position implements Comparable<Boa>
         super(latitude, longitude);
     }
 
+    public Boa(JSONObject jsonObject)
+    {
+        super();
+        try
+        {
+            this.setLatitude(jsonObject.getDouble("latitude"));
+            this.setLongitude(jsonObject.getDouble("longitude"));
+            this.setOrder(jsonObject.getInt("order"));
+            this.setId(jsonObject.getInt("ID"));
+            this.setTrackID(jsonObject.getInt("track_id"));
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public Boa(double latitude, double longitude, int order)
     {
         super(latitude, longitude);
@@ -63,7 +80,7 @@ public class Boa extends Position implements Comparable<Boa>
         if (obj.getClass().equals(Boa.class))
         {
             Boa o2 = (Boa) obj;
-            return latitude == o2.getLatitude() && longitude == o2.getLongitude() && order == o2.getOrder();
+            return super.equals(o2) && order == o2.getOrder() && trackID == o2.getTrackID();
         }
         else
         {
@@ -76,6 +93,7 @@ public class Boa extends Position implements Comparable<Boa>
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
         sb.append("Ordine: ").append(order).append(System.getProperty("line.separator"));
+        sb.append("ID tracciato: ").append(trackID).append(System.getProperty("line.separator"));
 
         return sb.toString();
     }
@@ -89,6 +107,7 @@ public class Boa extends Position implements Comparable<Boa>
             jsonObject.put("latitude", this.getLatitude());
             jsonObject.put("longitude", this.getLongitude());
             jsonObject.put("order", this.getOrder());
+            jsonObject.put("track_id", this.getTrackID());
             return jsonObject;
         }
         catch (JSONException e)
@@ -107,6 +126,7 @@ public class Boa extends Position implements Comparable<Boa>
             b.setLongitude(object.getDouble("longitude"));
             b.setOrder(object.getInt("order"));
             b.setId(object.getInt("ID"));
+            b.setTrackID(object.getInt("track_id"));
             return b;
         }
         catch (JSONException e)

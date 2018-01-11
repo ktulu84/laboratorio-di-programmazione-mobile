@@ -68,12 +68,14 @@ public class Track
     {
         trackName = "";
         trackPath = new ArrayList<>();
+        id = -1;
     }
 
     public Track(String name)
     {
         trackName = name;
         trackPath = new ArrayList<>();
+        id = -1;
     }
 
     public void addBoa(Boa b)

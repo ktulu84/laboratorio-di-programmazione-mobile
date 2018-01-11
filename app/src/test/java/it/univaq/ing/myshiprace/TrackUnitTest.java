@@ -31,7 +31,8 @@ public class TrackUnitTest
     public void testAddBoa() throws Exception
     {
         r.addBoa(b);
-        assertTrue(r.contains(b));
+        Boa a = new Boa(12.1, 12.1);
+        assertTrue(r.contains(a));
     }
 
     @Test

@@ -52,6 +52,20 @@ public abstract class Position
         this.id = id;
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (Position.class.isAssignableFrom(obj.getClass()))
+        {
+            Position o2 = (Position) obj;
+            return id == o2.getId() && latitude == o2.getLatitude() && longitude == o2.getLongitude();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder();

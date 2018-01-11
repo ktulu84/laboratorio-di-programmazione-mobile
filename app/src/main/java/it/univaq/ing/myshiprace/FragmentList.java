@@ -20,10 +20,10 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
-import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
 
 /**
@@ -52,26 +52,16 @@ public class FragmentList extends Fragment
             }
         });
 
-        tracks = new ArrayList<>();
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
         if (savedInstanceState == null)
         {
-            //TODO add real data
-            for (int i = 0; i < 12; ++i)
-            {
-                Track rt = new Track("Prova " + i);
-                Boa b = new Boa(12.1, 12.4, 1);
-                b.setId(i);
-                rt.addBoa(b);
-                Boa b1 = new Boa(54.1, 74.56, 2);
-                rt.addBoa(b1);
-                tracks.add(rt);
-            }
+            tracks = DBHelper.get(view.getContext()).getAllTracks();
         }
         else
         {
+            tracks = new ArrayList<>();
             int i = 0;
             String track = savedInstanceState.getString("track " + i);
             while (track != null)
@@ -81,7 +71,6 @@ public class FragmentList extends Fragment
                 track = savedInstanceState.getString("track " + i);
             }
         }
-
 
         list.addOnItemTouchListener(new RecyclerTouchListener(context,
                 list, new ClickListener()
@@ -122,6 +111,8 @@ public class FragmentList extends Fragment
             {
                 Intent intent = new Intent(context, TrackActivity.class);
                 Track rt = new Track(input.getText().toString());
+                DBHelper.get(context).saveOrUpdate(rt);
+                tracks.add(rt);
                 intent.putExtra("track_object", rt.toJSONArray().toString());
                 context.startActivity(intent);
             }
@@ -150,6 +141,7 @@ public class FragmentList extends Fragment
             {
                 final Track temp = tracks.get(position);
                 tracks.remove(position);
+                DBHelper.get(v.getContext()).delete(temp);
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, tracks.size());
                 Snackbar.make(v, R.string.track_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
@@ -161,6 +153,7 @@ public class FragmentList extends Fragment
                         Snackbar snackbar1 = Snackbar.make(view, R.string.undo_track_delete, Snackbar.LENGTH_LONG);
                         snackbar1.show();
                         tracks.add(position, temp);
+                        DBHelper.get(v.getContext()).save(temp);
                         list.getAdapter().notifyItemInserted(position);
                         list.getAdapter().notifyItemRangeChanged(0, tracks.size());
                     }
