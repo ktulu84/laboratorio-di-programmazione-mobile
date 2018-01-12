@@ -155,15 +155,18 @@ public class TrackActivity extends AppCompatActivity
                 EditText latitudeText = layout.findViewById(R.id.alert_new_boa_latitude);
                 EditText longitudeText = layout.findViewById(R.id.alert_new_boa_longitude);
                 EditText orderText = layout.findViewById(R.id.alert_new_boa_order);
-                double latitude = Double.valueOf(latitudeText.getText().toString());
-                double longitude = Double.valueOf(longitudeText.getText().toString());
-                int order = Integer.valueOf(orderText.getText().toString());
-                Boa b = new Boa(latitude, longitude);
-                b.setTrackID(rt.getId());
-                b.setOrder(order);
-                rt.addBoa(b);
-                DBHelper.get(context).saveOrUpdate(rt);
-                list.getAdapter().notifyDataSetChanged();
+                if (!orderText.getText().toString().isEmpty() && !latitudeText.getText().toString().isEmpty() && !longitudeText.getText().toString().isEmpty())
+                {
+                    double latitude = Double.valueOf(latitudeText.getText().toString());
+                    double longitude = Double.valueOf(longitudeText.getText().toString());
+                    int order = Integer.valueOf(orderText.getText().toString());
+                    Boa b = new Boa(latitude, longitude);
+                    b.setTrackID(rt.getId());
+                    b.setOrder(order);
+                    rt.addBoa(b);
+                    DBHelper.get(context).saveOrUpdate(rt);
+                    list.getAdapter().notifyDataSetChanged();
+                }
 //                Intent intent = new Intent(context, TrackActivity.class);
 //                Track rt = new Track(input.getText().toString());
 //                DBHelper.get(context).saveOrUpdate(rt);
