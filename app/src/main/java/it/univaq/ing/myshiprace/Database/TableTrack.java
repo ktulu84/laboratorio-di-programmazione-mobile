@@ -134,19 +134,11 @@ public class TableTrack
             cursor.moveToNext();
             track.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
             track.setTrackName(cursor.getString(cursor.getColumnIndex(TRACK_NAME)));
-            sql = "SELECT * FROM " + TableBoa.TABLE_NAME + " WHERE " + TableBoa.TRACK_ID + "=" + id;
-            cursor = db.rawQuery(sql, null);
-            while (cursor.moveToNext())
+            List<Boa> boas = TableBoa.getByTrackID(db, track.getId());
+            for (Boa b : boas)
             {
-                Boa boa = new Boa();
-                boa.setId((int) cursor.getLong(cursor.getColumnIndex(TableBoa.ID)));
-                boa.setOrder(cursor.getInt(cursor.getColumnIndex(TableBoa.ORDER)));
-                boa.setLatitude(cursor.getDouble(cursor.getColumnIndex(TableBoa.LATITUDE)));
-                boa.setLongitude(cursor.getDouble(cursor.getColumnIndex(TableBoa.LONGITUDE)));
-                boa.setTrackID(cursor.getInt(cursor.getColumnIndex(TableBoa.TRACK_ID)));
-                track.addBoa(boa);
+                track.addBoa(b);
             }
-
         }
         catch (Exception e)
         {

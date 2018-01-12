@@ -57,8 +57,8 @@ public class ShipPositionUnitTest
         ShipPosition p2 = new ShipPosition(12.1, 12.1, new Timestamp(1000));
         p2.setId(1);
         p.setId(1);
-        p.setTrackID(2);
-        p2.setTrackID(2);
+        p.setRaceID(2);
+        p2.setRaceID(2);
         assertTrue(p.equals(p2));
     }
 }

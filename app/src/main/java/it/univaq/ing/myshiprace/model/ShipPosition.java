@@ -18,16 +18,16 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
 {
 
     private Timestamp timestamp;
-    private int trackID;
+    private int raceID;
 
-    public int getTrackID()
+    public int getRaceID()
     {
-        return trackID;
+        return raceID;
     }
 
-    public void setTrackID(int trackID)
+    public void setRaceID(int raceID)
     {
-        this.trackID = trackID;
+        this.raceID = raceID;
     }
 
     private static DateFormat dateFormat = SimpleDateFormat.getDateTimeInstance();
@@ -92,7 +92,7 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
         if (obj.getClass().equals(ShipPosition.class))
         {
             ShipPosition o2 = (ShipPosition) obj;
-            return super.equals(o2) && timestamp.equals(o2.getTimestamp()) && trackID == o2.getTrackID();
+            return super.equals(o2) && timestamp.equals(o2.getTimestamp()) && raceID == o2.getRaceID();
         }
         else
         {

@@ -27,7 +27,7 @@ public class TableShipPosition
     static final String TIMESTAMP = "timestamp";
     static final String LATITUDE = "latitude";
     static final String LONGITUDE = "longitude";
-    static final String TRACK_ID = "track_id";
+    static final String RACE_ID = "race_id";
 
     public static void create(SQLiteDatabase db)
     {
@@ -36,9 +36,9 @@ public class TableShipPosition
                 TIMESTAMP + " NUMERIC, " +
                 LATITUDE + " NUMERIC, " +
                 LONGITUDE + " NUMERIC, " +
-                TRACK_ID + " INTEGER, " +
-                "FOREIGN KEY(" + TRACK_ID + ") " +
-                "REFERENCES " + TableTrack.TABLE_NAME + "(" + TableTrack.ID + ")" +
+                RACE_ID + " INTEGER, " +
+                "FOREIGN KEY(" + RACE_ID + ") " +
+                "REFERENCES " + TableRace.TABLE_NAME + "(" + TableRace.ID + ")" +
                 ")";
         db.execSQL(sql);
     }
@@ -62,7 +62,7 @@ public class TableShipPosition
         values.put(TIMESTAMP, shipPosition.getTimestamp().getTime());
         values.put(LATITUDE, shipPosition.getLatitude());
         values.put(LONGITUDE, shipPosition.getLongitude());
-        values.put(TRACK_ID, shipPosition.getTrackID());
+        values.put(RACE_ID, shipPosition.getRaceID());
         long id = db.insert(TABLE_NAME, null, values);
         if (id != -1) shipPosition.setId((int) id);
     }
@@ -74,7 +74,7 @@ public class TableShipPosition
         values.put(TIMESTAMP, shipPosition.getTimestamp().getTime());
         values.put(LATITUDE, shipPosition.getLatitude());
         values.put(LONGITUDE, shipPosition.getLongitude());
-        values.put(TRACK_ID, shipPosition.getTrackID());
+        values.put(RACE_ID, shipPosition.getRaceID());
 //        int rows = db.update(TABLE_NAME, values, ID +"= ?", new String[]{ String.valueOf(shipPosition.getId())} );
         return db.update(TABLE_NAME, values, ID + "=" + shipPosition.getId(), null) == 1;
     }
@@ -102,7 +102,7 @@ public class TableShipPosition
                 shipPosition.setTimestamp(new Timestamp(cursor.getLong(cursor.getColumnIndex(TIMESTAMP))));
                 shipPosition.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
                 shipPosition.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
-                shipPosition.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
+                shipPosition.setRaceID(cursor.getInt(cursor.getColumnIndex(RACE_ID)));
                 shipPositions.add(shipPosition);
             }
         }
@@ -133,7 +133,7 @@ public class TableShipPosition
             shipPosition.setTimestamp(new Timestamp(cursor.getLong(cursor.getColumnIndex(TIMESTAMP))));
             shipPosition.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
             shipPosition.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
-            shipPosition.setTrackID(cursor.getInt(cursor.getColumnIndex(TRACK_ID)));
+            shipPosition.setRaceID(cursor.getInt(cursor.getColumnIndex(RACE_ID)));
         }
         catch (Exception e)
         {
@@ -145,5 +145,37 @@ public class TableShipPosition
         }
 
         return shipPosition;
+    }
+
+    public static List<ShipPosition> getByRaceID(SQLiteDatabase db, int id)
+    {
+        List<ShipPosition> shipPositions = new ArrayList<>();
+
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE " + RACE_ID + " = " + id + " ORDER BY " + TIMESTAMP + " ASC";
+        Cursor cursor = null;
+        try
+        {
+            cursor = db.rawQuery(sql, null);
+            while (cursor.moveToNext())
+            {
+                ShipPosition position = new ShipPosition();
+                position.setId((int) cursor.getLong(cursor.getColumnIndex(ID)));
+                position.setTimestamp(new Timestamp(cursor.getLong(cursor.getColumnIndex(TIMESTAMP))));
+                position.setLatitude(cursor.getDouble(cursor.getColumnIndex(LATITUDE)));
+                position.setLongitude(cursor.getDouble(cursor.getColumnIndex(LONGITUDE)));
+                position.setRaceID(cursor.getInt(cursor.getColumnIndex(RACE_ID)));
+                shipPositions.add(position);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (cursor != null) cursor.close();
+        }
+
+        return shipPositions;
     }
 }
