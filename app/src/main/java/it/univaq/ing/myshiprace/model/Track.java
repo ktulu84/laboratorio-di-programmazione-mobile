@@ -14,6 +14,8 @@ import java.util.List;
 
 public class Track
 {
+    public static final String TRACK_JSON_NAME = "track_name";
+    public static final String TRACK_JSON_ID = "track_id";
     public static List<Track> fromJSONArray(String jsonString)
     {
         List<Track> tracks = new ArrayList<>();
@@ -40,8 +42,8 @@ public class Track
         {
             JSONArray array = new JSONArray(jsonarray);
             JSONObject jsonObject = array.getJSONObject(0);
-            r = new Track(jsonObject.getString("track_name"));
-            r.setId(jsonObject.getInt("track_id"));
+            r = new Track(jsonObject.getString(TRACK_JSON_NAME));
+            r.setId(jsonObject.getInt(TRACK_JSON_ID));
 
             for (int i = 1; i < array.length(); i++)
             {
@@ -167,8 +169,8 @@ public class Track
         JSONObject jsonObject = new JSONObject();
         try
         {
-            jsonObject.put("track_name", this.getTrackName());
-            jsonObject.put("track_id", this.getId());
+            jsonObject.put(TRACK_JSON_NAME, this.getTrackName());
+            jsonObject.put(TRACK_JSON_ID, this.getId());
         }
         catch (JSONException e)
         {

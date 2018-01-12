@@ -25,7 +25,7 @@ import it.univaq.ing.myshiprace.model.Track;
 public class TrackActivity extends AppCompatActivity
 {
     private Track rt;
-    RecyclerView list;
+    private RecyclerView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -76,8 +76,8 @@ public class TrackActivity extends AppCompatActivity
                 }
             }));
 
-            FloatingActionButton fab = findViewById(R.id.activity_new_track_fab);
-            fab.setOnClickListener(new View.OnClickListener()
+            FloatingActionButton fabNewBoa = findViewById(R.id.activity_new_track_fab);
+            fabNewBoa.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
@@ -85,6 +85,25 @@ public class TrackActivity extends AppCompatActivity
                     showDialog();
                 }
             });
+
+            FloatingActionButton fabPlay = findViewById(R.id.activity_play_track_fab);
+            fabPlay.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    Intent intent = new Intent(view.getContext(), MapsActivity.class);
+                    intent.putExtra("track_object", rt.toJSONArray().toString());
+                    view.getContext().startActivity(intent);
+//                    Toast.makeText(view.getContext(), "maronn", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            if (rt.length() <= 0)
+            {
+                fabPlay.setVisibility(View.INVISIBLE);
+            }
+
         }
 
     }
@@ -104,6 +123,10 @@ public class TrackActivity extends AppCompatActivity
                 DBHelper.get(v.getContext()).delete(temp);
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, rt.length());
+                final FloatingActionButton fab = findViewById(R.id.activity_play_track_fab);
+                if (rt.length() <= 0)
+                    fab.setVisibility(View.INVISIBLE);
+
                 Snackbar.make(v, R.string.buoy_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
                 {
 
@@ -116,6 +139,7 @@ public class TrackActivity extends AppCompatActivity
                         DBHelper.get(v.getContext()).save(temp);
                         list.getAdapter().notifyItemInserted(position);
                         list.getAdapter().notifyItemRangeChanged(0, rt.length());
+                        fab.setVisibility(View.VISIBLE);
                     }
                 }).setActionTextColor(Color.RED).show();
             }
@@ -166,6 +190,8 @@ public class TrackActivity extends AppCompatActivity
                     rt.addBoa(b);
                     DBHelper.get(context).saveOrUpdate(rt);
                     list.getAdapter().notifyDataSetChanged();
+                    FloatingActionButton fab = findViewById(R.id.activity_play_track_fab);
+                    fab.setVisibility(View.VISIBLE);
                 }
 //                Intent intent = new Intent(context, TrackActivity.class);
 //                Track rt = new Track(input.getText().toString());

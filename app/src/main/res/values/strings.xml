@@ -26,4 +26,8 @@
     <string name="undo_snackbar">UNDO</string>
     <string name="alert_track_remove">Rimuovere il tracciato selezionato?</string>
     <string name="boa_info_alert_title">New buoy</string>
+    <string name="speed">Speed</string>
+    <string name="activity_maps_start_position">Start</string>
+    <string name="activity_maps_finish_position">Finish</string>
+    <string name="activity_maps_buoy">Buoy</string>
 </resources>
