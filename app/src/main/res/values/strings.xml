@@ -8,7 +8,7 @@
     <string name="author">Author</string>
     <string name="author_name" translatable="false">Piero Collevecchio</string>
     <string name="title_activity_maps">Map</string>
-    <string name="track_name_inputbox_title">Insert track name</string>
+    <string name="track_name_inputbox_title">Track name</string>
     <string name="alert_ok">OK</string>
     <string name="alert_cancel">Cancel</string>
     <string name="adapter_tracciato_num_boe">Number of buoys:</string>
@@ -25,4 +25,5 @@
     <string name="undo_buoy_remove">Buoy restored</string>
     <string name="undo_snackbar">UNDO</string>
     <string name="alert_track_remove">Rimuovere il tracciato selezionato?</string>
+    <string name="boa_info_alert_title">New buoy</string>
 </resources>

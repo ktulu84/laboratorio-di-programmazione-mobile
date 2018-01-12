@@ -142,7 +142,7 @@ public class TrackActivity extends AppCompatActivity
     private void showDialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.track_name_inputbox_title);
+        builder.setTitle(R.string.boa_info_alert_title);
         final View layout = getLayoutInflater().inflate(R.layout.alert_new_boa, null);
         final Context context = this;
         builder.setView(layout);
