@@ -26,7 +26,6 @@
         app:backgroundTint="#bdbdbd"
         app:borderWidth="0dp"
         app:fabSize="mini"
-        app:layout_behavior="it.univaq.ing.myshiprace.Util.ScrollAwareFABBehavior"
         app:rippleColor="#fff"
         app:srcCompat="@drawable/ic_play_arrow" />
 
@@ -39,7 +38,6 @@
         android:clickable="true"
         android:focusable="true"
         app:fabSize="normal"
-        app:layout_behavior="it.univaq.ing.myshiprace.Util.ScrollAwareFABBehavior"
         app:rippleColor="#8c9eff"
         app:srcCompat="@drawable/ic_add" />
 </android.support.design.widget.CoordinatorLayout>

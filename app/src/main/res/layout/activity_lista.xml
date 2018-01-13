@@ -21,7 +21,6 @@
         android:focusable="true"
         app:borderWidth="0dp"
         app:fabSize="normal"
-        app:layout_behavior="it.univaq.ing.myshiprace.Util.ScrollAwareFABBehavior"
         app:rippleColor="#8c9eff"
         app:srcCompat="@drawable/ic_add" />
 </android.support.design.widget.CoordinatorLayout>

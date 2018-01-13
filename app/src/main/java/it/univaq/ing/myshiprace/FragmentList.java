@@ -92,7 +92,7 @@ public class FragmentList extends Fragment
     {
         View view = inflater.inflate(R.layout.activity_lista, container, false);
         context = view.getContext();
-        FloatingActionButton fab = view.findViewById(R.id.activity_lista_fab);
+        final FloatingActionButton fab = view.findViewById(R.id.activity_lista_fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
