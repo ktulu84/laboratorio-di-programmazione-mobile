@@ -19,6 +19,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
         android:focusable="true"
+        app:borderWidth="0dp"
         app:fabSize="normal"
         app:layout_behavior="it.univaq.ing.myshiprace.Util.ScrollAwareFABBehavior"
         app:rippleColor="#8c9eff"
