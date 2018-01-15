@@ -1,19 +1,18 @@
 package it.univaq.ing.myshiprace;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,73 +26,86 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
+import it.univaq.ing.myshiprace.service.MyLocationService;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
 {
-
+    public static final String ACTION_SERVICE_GET_POSITION = "action_service_get_position";
     GoogleMap mMap;
     List<LatLng> percorsoGara;
     List<LatLng> percorsoBarca;
     boolean firstLoaded = true;
-    private LocationManager locationManager;
-    private String locationProvider;
-    private LatLng coordinate;
     private Marker currentBoatposition;
     private Polyline actualPath;
+    private boolean serviceStarted = false;
 
-    LocationListener locationListener = new LocationListener()
+    private BroadcastReceiver receiver = new BroadcastReceiver()
     {
-        public void onLocationChanged(Location location)
+        @Override
+        public void onReceive(Context context, Intent intent)
         {
-            // Called when a new location is found by the network location provider.
-            coordinate = new LatLng(location.getLatitude(), location.getLongitude());
-            Log.i("POSIZIONE", "Sto provando a prendere la posizione");
-            if (percorsoBarca == null)
+            if (intent == null || intent.getAction() == null) return;
+
+            switch (intent.getAction())
             {
-                percorsoBarca = new ArrayList<>();
+                case ACTION_SERVICE_GET_POSITION:
+
+                    Double longitude = intent.getDoubleExtra("longitude", Double.NaN);
+                    Double latitude = intent.getDoubleExtra("latitude", Double.NaN);
+                    Double speed = intent.getDoubleExtra("speed", Double.NaN);
+                    if (!longitude.equals(Double.NaN) && !latitude.equals(Double.NaN))
+                    {
+                        LatLng coordinate = new LatLng(latitude, longitude);
+                        if (percorsoBarca == null)
+                        {
+                            percorsoBarca = new ArrayList<>();
 
 //                mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
 //                Log.i("POSIZIONE", "Aggiunto marker nella posizione di partenza");
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(coordinate);
-                markerOptions.title("prova");
-                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
-                currentBoatposition = mMap.addMarker(markerOptions);
-                actualPath = mMap.addPolyline(new PolylineOptions()
-                        .width(5)
-                        .color(Color.RED));
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(coordinate);
+                            markerOptions.title("prova");
+                            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
+                            currentBoatposition = mMap.addMarker(markerOptions);
+                            actualPath = mMap.addPolyline(new PolylineOptions()
+                                    .width(5)
+                                    .color(Color.RED));
+                        }
+                        percorsoBarca.add(coordinate);
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate));
+                        if (currentBoatposition != null)
+                        {
+                            currentBoatposition.setPosition(coordinate);
+                        }
+                        actualPath.setPoints(percorsoBarca);
+                        DecimalFormat decimalFormat = new DecimalFormat("0.######");
+                        TextView textSpeed = findViewById(R.id.activity_maps_speed);
+                        textSpeed.setText(decimalFormat.format(speed));
+                        TextView textLatitude = findViewById(R.id.activity_maps_latitude);
+                        textLatitude.setText(decimalFormat.format(latitude));
+                        TextView textLongitude = findViewById(R.id.activity_maps_longitude);
+                        textLongitude.setText(decimalFormat.format(longitude));
+                    }
+                    break;
             }
-            percorsoBarca.add(coordinate);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate));
-            if (currentBoatposition != null)
-            {
-                currentBoatposition.setPosition(coordinate);
-            }
-            actualPath.setPoints(percorsoBarca);
         }
-
-        public void onStatusChanged(String provider, int status, Bundle extras)
-        {
-
-        }
-
-        public void onProviderEnabled(String provider)
-        {
-
-        }
-
-        public void onProviderDisabled(String provider)
-        {
-
-        }
-
     };
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
+        Context c = this;
+        LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -110,31 +122,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap)
     {
         mMap = googleMap;
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
         else
         {
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            locationProvider = locationManager.getBestProvider(criteria, true);
-//        locationProvider = LocationManager.GPS_PROVIDER;
-            locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
             Intent intent = getIntent();
             Track t;
             String trackJSON;
             trackJSON = intent.getStringExtra("track_object");
             t = Track.parseJSON(trackJSON);
-            // Add a marker in Sydney and move the camera
             LatLng latLng = null;
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             percorsoGara = new ArrayList<>();
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .width(5)
                     .color(Color.rgb(46, 125, 50)));
-//the include method will calculate the min and max bound.
             if (t.length() > 0)
             {
                 Boa b = t.getBoa(0);
@@ -142,7 +146,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 percorsoGara.add(latLng);
                 MarkerOptions marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_start_position))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                ;
                 mMap.addMarker(marker);
                 builder.include(marker.getPosition());
 
@@ -180,6 +183,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     firstLoaded = false;
                 }
                 line.setPoints(percorsoGara);
+                if (!serviceStarted)
+                {
+                    IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
+                    Context c = this;
+                    LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+                    Intent newIntent = new Intent(c, MyLocationService.class);
+                    newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
+                    startService(newIntent);
+                    serviceStarted = true;
+                }
+
             }
         }
     }
@@ -197,21 +211,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    Criteria criteria = new Criteria();
-                    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                    locationProvider = locationManager.getBestProvider(criteria, true);
-//        locationProvider = LocationManager.GPS_PROVIDER;
-                    try
-                    {
-                        locationManager.requestLocationUpdates(locationProvider, 2000, 4, locationListener);
-
-                    }
-                    catch (SecurityException e)
-                    {
-                        // avendo appena dato il permesso mi sembra stupido gestire un'eccezione che non si verificherà mai
-                    }
-//                    permesso = true;
-
+                    Intent service = new Intent(getApplicationContext(), MyLocationService.class);
+                    getApplicationContext().startActivity(service);
                 }
                 else
                 {
