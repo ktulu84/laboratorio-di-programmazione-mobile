@@ -1,5 +1,6 @@
 package it.univaq.ing.myshiprace;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -36,7 +37,6 @@ public class MainActivity extends AppCompatActivity
             getFragmentManager().beginTransaction().add(R.id.main_container, new FragmentList()).commit();
             navigationView.setCheckedItem(R.id.nav_lista);
         }
-
     }
 
     @Override
@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_info:
                 getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentInfo()).commit();
+                break;
+            case R.id.nav_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 break;
         }
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

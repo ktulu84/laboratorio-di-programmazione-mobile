@@ -1,9 +1,12 @@
 package it.univaq.ing.myshiprace.Util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,7 +22,7 @@ import java.net.URL;
 public class Request
 {
 
-    public static String doRequest(String address)
+    public static String doRequest(String address, String[] parameters, String[] values)
     {
 
         URL url;
@@ -37,16 +40,32 @@ public class Request
         try
         {
             connection = (HttpURLConnection) url.openConnection();
-            // connection.setRequestMethod("POST");
-            // connection.setDoOutput(true);
+            if (parameters != null && parameters.length > 0)
+            {
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
 
-            // String params = "key=value&key=value";
+                StringBuilder params = new StringBuilder();
 
-            // OutputStream out = connection.getOutputStream();
-            // BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
-            // bw.write(params);
-            // bw.flush();
-            // bw.close();
+                params.append(parameters[0]).append("=").append(values[0]);
+
+                if (parameters.length > 1)
+                {
+                    for (int i = 1; i < parameters.length - 1; ++i)
+                    {
+                        params.append("&");
+                        params.append(parameters[i]).append("=").append(values[i]);
+                    }
+                    params.append(parameters[parameters.length - 1]).append("=").append(values[parameters.length - 1]);
+                }
+
+
+                OutputStream out = connection.getOutputStream();
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
+                bw.write(params.toString());
+                bw.flush();
+                bw.close();
+            }
 
             InputStream is;
             int code = connection.getResponseCode();
@@ -79,4 +98,6 @@ public class Request
             if (connection != null) connection.disconnect();
         }
     }
+
+
 }

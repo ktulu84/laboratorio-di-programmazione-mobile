@@ -2,12 +2,14 @@ package it.univaq.ing.myshiprace;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +28,7 @@ import java.util.List;
 import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.Util.ClickListener;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
+import it.univaq.ing.myshiprace.Util.Request;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
 import it.univaq.ing.myshiprace.model.Track;
 import it.univaq.ing.myshiprace.service.MyService;
@@ -90,15 +94,26 @@ public class FragmentList extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
+//        new MyTask().execute();
         View view = inflater.inflate(R.layout.activity_lista, container, false);
         context = view.getContext();
-        final FloatingActionButton fab = view.findViewById(R.id.activity_lista_fab);
-        fab.setOnClickListener(new View.OnClickListener()
+        FloatingActionButton fabAdd = view.findViewById(R.id.activity_lista_fab);
+        fabAdd.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
                 showDialog();
+            }
+        });
+
+        FloatingActionButton fabDownload = view.findViewById(R.id.activity_download_track_fab);
+        fabDownload.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                showDownload();
             }
         });
 
@@ -162,6 +177,39 @@ public class FragmentList extends Fragment
         builder.show();
     }
 
+    private void showDownload()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Server da cui scaricare il tracciato");
+
+        final EditText input = new EditText(context);
+
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                Intent intent = new Intent(context, TrackActivity.class);
+                MyTask task = new MyTask();
+                task.execute(input.getText().toString());
+
+
+            }
+        });
+
+        builder.setNegativeButton(R.string.alert_cancel, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
+
     private void deleteTrack(final View v, final int position)
     {
         AlertDialog.Builder adb = new AlertDialog.Builder(v.getContext());
@@ -204,5 +252,74 @@ public class FragmentList extends Fragment
         });
 
         adb.show();
+    }
+
+
+//    private class MyTask extends AsyncTask<Void, Void, Void>
+//    {
+//        ProgressDialog dialog;
+//
+//
+//        @Override
+//        protected Void doInBackground(Void... voids)
+//        {
+//            String req = "";
+//            try
+//            {
+//                req = Request.doRequest("http://192.168.1.6:8080/prova", new String[]{"PIPPO"}, new String[]{new JSONObject("{\"a\":1}").toString()});
+//            }
+//            catch (JSONException e)
+//            {
+//                e.printStackTrace();
+//            }
+//
+//            Log.e("risultatoooo", req);
+//            return null;
+//        }
+//    }
+
+    private class MyTask extends AsyncTask<String, Void, Track>
+    {
+        ProgressDialog dialog;
+
+        @Override
+        protected Track doInBackground(String... strings)
+        {
+            String req = "";
+            req = Request.doRequest(strings[0], null, null);
+            if (req != null && !req.isEmpty())
+            {
+                Track rt = Track.parseJSON(req);
+
+                Log.e("risultatoooo", rt.toJSONArray().toString());
+                return rt;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Track track)
+        {
+            if (track != null)
+            {
+                super.onPostExecute(track);
+                DBHelper.get(context).saveOrUpdate(track);
+                tracks.add(track);
+                Intent intent = new Intent(context, TrackActivity.class);
+                intent.putExtra("track_object", track.toJSONArray().toString());
+                context.startActivity(intent);
+            }
+            else
+            {
+                AlertDialog.Builder adb = new AlertDialog.Builder(getContext());
+                adb.setTitle("non ho trovato il tracciato");
+                adb.setIcon(R.drawable.ic_warning);
+                adb.setPositiveButton(R.string.alert_ok, null);
+                adb.show();
+            }
+        }
     }
 }

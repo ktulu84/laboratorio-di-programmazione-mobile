@@ -29,4 +29,5 @@
     <string name="activity_maps_start_position">Partenza</string>
     <string name="activity_maps_finish_position">Arrivo</string>
     <string name="activity_maps_buoy">Boa</string>
+    <string name="activity_main_drawer_settings">Settings</string>
 </resources>

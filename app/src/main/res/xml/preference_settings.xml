@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="pref_key_server_address"
+        android:summary="Indirizzo del server a cui inviare i dati"
+        android:title="Server"
+        android:defaultValue="localhost:8080/prova"
+
+        />
+    />
+</PreferenceScreen>

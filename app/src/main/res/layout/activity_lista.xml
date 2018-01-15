@@ -12,6 +12,22 @@
         tools:listitem="@layout/adapter_tracciato" />
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/activity_download_track_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="82dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:clickable="true"
+        android:focusable="true"
+        app:backgroundTint="#bdbdbd"
+        app:borderWidth="0dp"
+        app:fabSize="normal"
+        app:rippleColor="#fff"
+        app:srcCompat="@drawable/ic_download" />
+
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/activity_lista_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
