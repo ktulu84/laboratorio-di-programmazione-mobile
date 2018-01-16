@@ -43,7 +43,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     boolean firstLoaded = true;
     private Marker currentBoatposition;
     private Polyline actualPath;
-    private boolean serviceStarted = false;
+    private boolean isRegistered = false;
 
     private BroadcastReceiver receiver = new BroadcastReceiver()
     {
@@ -59,6 +59,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Double longitude = intent.getDoubleExtra("longitude", Double.NaN);
                     Double latitude = intent.getDoubleExtra("latitude", Double.NaN);
                     Double speed = intent.getDoubleExtra("speed", Double.NaN);
+                    Float bearing = intent.getFloatExtra("bearing", Float.NaN);
+                    if (bearing < 0)
+                        bearing += 180;
+                    bearing -= 90;
                     if (!longitude.equals(Double.NaN) && !latitude.equals(Double.NaN))
                     {
                         LatLng coordinate = new LatLng(latitude, longitude);
@@ -69,11 +73,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate));
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
 //                Log.i("POSIZIONE", "Aggiunto marker nella posizione di partenza");
-                            MarkerOptions markerOptions = new MarkerOptions();
-                            markerOptions.position(coordinate);
-                            markerOptions.title("prova");
-                            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
-                            currentBoatposition = mMap.addMarker(markerOptions);
+//                            MarkerOptions markerOptions = new MarkerOptions();
+//                            markerOptions.position(coordinate);
+//                            markerOptions.title("prova");
+//                            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
+//                            currentBoatposition = mMap.addMarker(markerOptions);
                             actualPath = mMap.addPolyline(new PolylineOptions()
                                     .width(5)
                                     .color(Color.RED));
@@ -83,6 +87,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if (currentBoatposition != null)
                         {
                             currentBoatposition.setPosition(coordinate);
+                            currentBoatposition.setRotation(bearing);
+                        }
+                        else
+                        {
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(coordinate);
+                            markerOptions.title("prova");
+                            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
+                            currentBoatposition = mMap.addMarker(markerOptions);
                         }
                         actualPath.setPoints(percorsoBarca);
                         DecimalFormat decimalFormat = new DecimalFormat("0.######");
@@ -104,7 +117,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
         Context c = this;
-        LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+        if (!isRegistered)
+        {
+            LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+            isRegistered = true;
+        }
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        if (isRegistered)
+        {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+            isRegistered = false;
+        }
     }
 
     @Override
@@ -128,73 +156,81 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         else
         {
-            Intent intent = getIntent();
-            Track t;
-            String trackJSON;
-            trackJSON = intent.getStringExtra("track_object");
-            t = Track.parseJSON(trackJSON);
-            LatLng latLng = null;
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            percorsoGara = new ArrayList<>();
-            Polyline line = mMap.addPolyline(new PolylineOptions()
-                    .width(5)
-                    .color(Color.rgb(46, 125, 50)));
-            if (t.length() > 0)
+            setBoas();
+        }
+    }
+
+    private void setBoas()
+    {
+        Intent intent = getIntent();
+        Track t;
+        String trackJSON;
+        trackJSON = intent.getStringExtra("track_object");
+        t = Track.parseJSON(trackJSON);
+        LatLng latLng = null;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        percorsoGara = new ArrayList<>();
+        Polyline line = mMap.addPolyline(new PolylineOptions()
+                .width(5)
+                .color(Color.rgb(46, 125, 50)));
+        if (t.length() > 0)
+        {
+            Boa b = t.getBoa(0);
+            latLng = new LatLng(b.getLatitude(), b.getLongitude());
+            percorsoGara.add(latLng);
+            MarkerOptions marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_start_position))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            mMap.addMarker(marker);
+            builder.include(marker.getPosition());
+
+            for (int i = 1; i < t.length() - 1; ++i)
             {
-                Boa b = t.getBoa(0);
+                b = t.getBoa(i);
                 latLng = new LatLng(b.getLatitude(), b.getLongitude());
                 percorsoGara.add(latLng);
-                MarkerOptions marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_start_position))
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_buoy) + " " + i);
                 mMap.addMarker(marker);
                 builder.include(marker.getPosition());
-
-                for (int i = 1; i < t.length() - 1; ++i)
-                {
-                    b = t.getBoa(i);
-                    latLng = new LatLng(b.getLatitude(), b.getLongitude());
-                    percorsoGara.add(latLng);
-                    marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_buoy) + " " + i);
-                    mMap.addMarker(marker);
-                    builder.include(marker.getPosition());
-                }
-
-                if (t.length() > 1)
-                {
-                    b = t.getBoa(t.length() - 1);
-                    latLng = new LatLng(b.getLatitude(), b.getLongitude());
-                    percorsoGara.add(latLng);
-                    marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_finish_position))
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                    ;
-                    mMap.addMarker(marker);
-                    builder.include(marker.getPosition());
-                }
-                if (firstLoaded)
-                {
-                    int width = getSupportFragmentManager()
-                            .findFragmentById(R.id.map).getView().getWidth();
-                    int height = getSupportFragmentManager()
-                            .findFragmentById(R.id.map).getView().getHeight();
-                    int padding = (int) ((width < height) ? height * 0.10 : width * 0.10);
-                    LatLngBounds bounds = builder.build();
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
-
-                    firstLoaded = false;
-                }
-                line.setPoints(percorsoGara);
-                if (!serviceStarted)
-                {
-                    IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
-                    Context c = this;
-                    LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
-                    Intent newIntent = new Intent(c, MyLocationService.class);
-                    newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
-                    startService(newIntent);
-                    serviceStarted = true;
-                }
-
             }
+
+            if (t.length() > 1)
+            {
+                b = t.getBoa(t.length() - 1);
+                latLng = new LatLng(b.getLatitude(), b.getLongitude());
+                percorsoGara.add(latLng);
+                marker = new MarkerOptions().position(latLng).title(getString(R.string.activity_maps_finish_position))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                ;
+                mMap.addMarker(marker);
+                builder.include(marker.getPosition());
+            }
+            if (firstLoaded)
+            {
+                int width = getSupportFragmentManager()
+                        .findFragmentById(R.id.map).getView().getWidth();
+                int height = getSupportFragmentManager()
+                        .findFragmentById(R.id.map).getView().getHeight();
+                int padding = (int) ((width < height) ? height * 0.10 : width * 0.10);
+                LatLngBounds bounds = builder.build();
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
+
+                firstLoaded = false;
+            }
+            line.setPoints(percorsoGara);
+            if (!MyLocationService.isRunning())
+            {
+                IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
+                Context c = this;
+                if (!isRegistered)
+                {
+                    LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+                    isRegistered = true;
+                }
+                Intent newIntent = new Intent(c, MyLocationService.class);
+                newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
+                startService(newIntent);
+            }
+
         }
     }
 
@@ -211,16 +247,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    Intent service = new Intent(getApplicationContext(), MyLocationService.class);
-                    getApplicationContext().startActivity(service);
+                    setBoas();
                 }
-                else
-                {
-//                    Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
-                }
-                return;
+                break;
             }
-
         }
     }
 

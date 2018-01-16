@@ -9,12 +9,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import it.univaq.ing.myshiprace.MapsActivity;
 
 /**
  * Created by ktulu on 15/01/18.
@@ -24,28 +27,56 @@ public class MyLocationService extends Service
 {
     public static final String ACTION_GET_POSITION = "action_get_position";
     private static final String TAG = "MyLocationService";
+    private static boolean isRunning = false;
 
     List<LatLng> percorsoBarca;
     private LocationManager locationManager = null;
-    private String locationProvider;
-    private LatLng coordinate;
+    private Location locationOld;
 
-    private static final int LOCATION_INTERVAL = 2000;
-    private static final float LOCATION_DISTANCE = 10;
+    private static final int LOCATION_INTERVAL = 1000;
+    private static final float LOCATION_DISTANCE = 5;
+
+    public static boolean isRunning()
+    {
+        return isRunning;
+    }
 
     private LocationListener locationListener = new LocationListener()
     {
         public void onLocationChanged(Location location)
         {
             // Called when a new location is found by the network location provider.
-            coordinate = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
+
             Log.i(TAG, "Trying to get a location");
             if (percorsoBarca == null)
             {
                 percorsoBarca = new ArrayList<>();
             }
             percorsoBarca.add(coordinate);
+            if (locationOld == null)
+            {
+                locationOld = location;
+            }
 
+            double speed;
+            if (location.hasSpeed())
+            {
+                speed = location.getSpeed();
+            }
+            else
+            {
+                speed = location.distanceTo(locationOld) / ((location.getTime() - locationOld.getTime()) / 1000);
+            }
+            float bearing = locationOld.bearingTo(location);
+            locationOld = location;
+
+            Intent intent = new Intent(MapsActivity.ACTION_SERVICE_GET_POSITION);
+            intent.putExtra("longitude", location.getLongitude());
+            intent.putExtra("latitude", location.getLatitude());
+            intent.putExtra("speed", speed);
+            intent.putExtra("bearing", bearing);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras)
@@ -59,9 +90,10 @@ public class MyLocationService extends Service
             {
                 try
                 {
+                    locationManager.removeUpdates(locationListener);
                     Criteria criteria = new Criteria();
                     criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                    locationProvider = locationManager.getBestProvider(criteria, true);
+                    String locationProvider = LocationManager.GPS_PROVIDER;
                     locationManager.requestLocationUpdates(locationProvider, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
                 }
                 catch (SecurityException e)
@@ -77,6 +109,7 @@ public class MyLocationService extends Service
             if (provider.equals(LocationManager.GPS_PROVIDER))
             {
                 //TODO insert notification
+
             }
         }
 
@@ -94,6 +127,7 @@ public class MyLocationService extends Service
     {
         Log.e(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
+        isRunning = true;
         return START_STICKY;
     }
 
@@ -104,9 +138,10 @@ public class MyLocationService extends Service
         initializeLocationManager();
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String locationProvider = locationManager.getBestProvider(criteria, true);
+        String locationProvider = locationManager.getBestProvider(criteria, false);
         try
         {
+            Log.w(TAG, "Registering listener, provider: " + locationProvider);
             locationManager.requestLocationUpdates(locationProvider, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
         }
         catch (java.lang.SecurityException ex)
@@ -125,6 +160,7 @@ public class MyLocationService extends Service
             try
             {
                 locationManager.removeUpdates(locationListener);
+                isRunning = false;
             }
             catch (Exception ex)
             {
