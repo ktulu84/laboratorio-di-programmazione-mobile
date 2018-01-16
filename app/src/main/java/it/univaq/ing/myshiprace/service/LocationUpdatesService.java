@@ -45,7 +45,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import it.univaq.ing.myshiprace.MainActivity;
+import it.univaq.ing.myshiprace.MapsActivity;
 import it.univaq.ing.myshiprace.R;
 import it.univaq.ing.myshiprace.Util.Utils;
 
@@ -76,9 +76,9 @@ public class LocationUpdatesService extends Service
      */
     private static final String CHANNEL_ID = "channel_01";
 
-    static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
+    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
 
-    static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
+    public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
     private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
             ".started_from_notification";
 
@@ -131,6 +131,7 @@ public class LocationUpdatesService extends Service
      * The current location.
      */
     private Location mLocation;
+    private Location locationOld;
 
     public LocationUpdatesService()
     {
@@ -302,7 +303,7 @@ public class LocationUpdatesService extends Service
 
         // The PendingIntent to launch activity.
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), 0);
+                new Intent(this, MapsActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .addAction(R.drawable.ic_launch, getString(R.string.launch_activity),
@@ -313,7 +314,7 @@ public class LocationUpdatesService extends Service
                 .setContentTitle(Utils.getLocationTitle(this))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setSmallIcon(R.drawable.ic_boat)
+                .setSmallIcon(R.drawable.ic_notification_icon)
                 .setTicker(text)
                 .setWhen(System.currentTimeMillis());
 
@@ -358,10 +359,31 @@ public class LocationUpdatesService extends Service
         Log.i(TAG, "New location: " + location);
 
         mLocation = location;
+        if (locationOld == null)
+        {
+            locationOld = location;
+        }
 
+        float speed;
+        if (location.hasSpeed())
+        {
+            speed = location.getSpeed();
+        }
+        else
+        {
+            speed = location.distanceTo(locationOld) / ((location.getTime() - locationOld.getTime()) / 1000);
+        }
+        float bearing = locationOld.bearingTo(location);
+        if (bearing < 0)
+            bearing += 180;
+        bearing -= 90;
+        locationOld = location;
         // Notify anyone listening for broadcasts about the new location.
-        Intent intent = new Intent(ACTION_BROADCAST);
+        Intent intent = new Intent(MapsActivity.ACTION_SERVICE_GET_POSITION);
         intent.putExtra(EXTRA_LOCATION, location);
+        intent.putExtra("speed", speed);
+        Log.e("SPEEEEEEEEEEEEED", String.valueOf(speed));
+        intent.putExtra("bearing", bearing);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
         // Update notification content if running as a foreground service.
@@ -388,7 +410,7 @@ public class LocationUpdatesService extends Service
      */
     public class LocalBinder extends Binder
     {
-        LocationUpdatesService getService()
+        public LocationUpdatesService getService()
         {
             return LocationUpdatesService.this;
         }

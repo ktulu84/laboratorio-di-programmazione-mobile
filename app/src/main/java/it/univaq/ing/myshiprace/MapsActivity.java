@@ -2,12 +2,16 @@ package it.univaq.ing.myshiprace;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -32,7 +36,7 @@ import java.util.List;
 
 import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
-import it.univaq.ing.myshiprace.service.MyLocationService;
+import it.univaq.ing.myshiprace.service.LocationUpdatesService;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
 {
@@ -44,6 +48,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker currentBoatposition;
     private Polyline actualPath;
     private boolean isRegistered = false;
+    // A reference to the service used to get location updates.
+    private LocationUpdatesService mService = null;
+
+    // Tracks the bound state of the service.
+    private boolean mBound = false;
+
+    // Monitors the state of the connection to the service.
+    private final ServiceConnection mServiceConnection = new ServiceConnection()
+    {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
+            mService = binder.getService();
+            mService.requestLocationUpdates();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            mService = null;
+            mBound = false;
+        }
+    };
 
     private BroadcastReceiver receiver = new BroadcastReceiver()
     {
@@ -55,14 +85,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             switch (intent.getAction())
             {
                 case ACTION_SERVICE_GET_POSITION:
-
-                    Double longitude = intent.getDoubleExtra("longitude", Double.NaN);
-                    Double latitude = intent.getDoubleExtra("latitude", Double.NaN);
-                    Double speed = intent.getDoubleExtra("speed", Double.NaN);
+                    Location location = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
+                    Double longitude = location.getLongitude();
+                    Double latitude = location.getLatitude();
+                    float speed = intent.getFloatExtra("speed", Float.NaN);
                     Float bearing = intent.getFloatExtra("bearing", Float.NaN);
-                    if (bearing < 0)
-                        bearing += 180;
-                    bearing -= 90;
+
                     if (!longitude.equals(Double.NaN) && !latitude.equals(Double.NaN))
                     {
                         LatLng coordinate = new LatLng(latitude, longitude);
@@ -115,11 +143,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onResume()
     {
         super.onResume();
-        IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
-        Context c = this;
         if (!isRegistered)
         {
-            LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+            LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+                    new IntentFilter(ACTION_SERVICE_GET_POSITION));
             isRegistered = true;
         }
     }
@@ -217,19 +244,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 firstLoaded = false;
             }
             line.setPoints(percorsoGara);
-            if (!MyLocationService.isRunning())
-            {
-                IntentFilter filter = new IntentFilter(ACTION_SERVICE_GET_POSITION);
-                Context c = this;
+//            if (!MyLocationService.isRunning())
+//            {
                 if (!isRegistered)
                 {
-                    LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+                    LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+                            new IntentFilter(ACTION_SERVICE_GET_POSITION));
                     isRegistered = true;
                 }
-                Intent newIntent = new Intent(c, MyLocationService.class);
-                newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
-                startService(newIntent);
-            }
+//                Intent newIntent = new Intent(this, MyLocationService.class);
+//                newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
+//                startService(newIntent);
+//            }
 
         }
     }
@@ -298,5 +324,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
         }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        // Bind to the service. If the service is in foreground mode, this signals to the service
+        // that since this activity is in the foreground, the service can exit foreground mode.
+        bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
+                Context.BIND_AUTO_CREATE);
+//        mService.requestLocationUpdates();
+
+    }
+
+    @Override
+    protected void onStop()
+    {
+        if (mBound)
+        {
+            // Unbind from the service. This signals to the service that this activity is no longer
+            // in the foreground, and the service can respond by promoting itself to a foreground
+            // service.
+            unbindService(mServiceConnection);
+            mBound = false;
+        }
+
+        super.onStop();
     }
 }
