@@ -14,8 +14,8 @@
     <string name="activity_main_drawer_track_list">Lista tracciati</string>
     <string name="activity_main_drawer_info">Informazioni</string>
     <string name="title_activity_new_track">Nuovo tracciato</string>
-    <string name="latitude">Latitudine</string>
-    <string name="longitude">Longitudine</string>
+    <string name="latitude">Lat.</string>
+    <string name="longitude">Lon.</string>
     <string name="order">Ordine</string>
     <string name="alert_boa_remove">Rimuovere la boa selezionata?</string>
     <string name="track_removed_text">Tracciato rimosso</string>
@@ -25,7 +25,7 @@
     <string name="undo_snackbar">ANNULLA</string>
     <string name="alert_track_remove">Rimuovere il tracciato selezionato?</string>
     <string name="boa_info_alert_title">Nuova boa</string>
-    <string name="speed">Velocità</string>
+    <string name="speed">Vel.</string>
     <string name="activity_maps_start_position">Partenza</string>
     <string name="activity_maps_finish_position">Arrivo</string>
     <string name="activity_maps_buoy">Boa</string>
@@ -42,6 +42,7 @@
     <string name="remove_location_updates">Rimuovi aggiornamenti</string>
     <string name="location_updated">Posizione aggiornata: %1$s</string>
     <string name="unknown_location">Posizione sconosciuta</string>
-    <string name="start_race">Start race</string>
-    <string name="stop_race">Stop race</string>
+    <string name="start_race">Avvia gara</string>
+    <string name="stop_race">Ferma gara</string>
+    <string name="distance">Distanza</string>
 </resources>
