@@ -46,4 +46,6 @@
     <string name="location_updated">Location Updated: %1$s</string>
     <string name="pref_header_general">General</string>
     <string name="unknown_location">Unknown location</string>
+    <string name="start_race">Start race</string>
+    <string name="stop_race">Stop race</string>
 </resources>
