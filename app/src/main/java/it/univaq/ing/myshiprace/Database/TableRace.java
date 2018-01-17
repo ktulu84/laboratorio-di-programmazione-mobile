@@ -34,7 +34,7 @@ public class TableRace
         String sql = "CREATE TABLE " + TABLE_NAME + "(" +
                 ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 TRACK_ID + " INTEGER, " +
-                START_TIME + " NUMERIC, " +
+                START_TIME + " NUMERIC" +
                 ")";
         db.execSQL(sql);
     }
@@ -55,7 +55,6 @@ public class TableRace
     {
 
         ContentValues values = new ContentValues();
-        values.put(ID, race.getId());
         values.put(START_TIME, race.getStartTime().getTime());
         values.put(TRACK_ID, race.getTrackID());
         long id = db.insert(TABLE_NAME, null, values);

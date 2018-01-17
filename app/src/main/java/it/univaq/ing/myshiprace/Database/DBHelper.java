@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.model.Boa;
+import it.univaq.ing.myshiprace.model.Race;
 import it.univaq.ing.myshiprace.model.ShipPosition;
 import it.univaq.ing.myshiprace.model.Track;
 
@@ -53,6 +54,7 @@ public class DBHelper extends SQLiteOpenHelper
         TableTrack.create(db);
         TableShipPosition.create(db);
         TableBoa.create(db);
+        TableRace.create(db);
     }
 
     @Override
@@ -61,6 +63,12 @@ public class DBHelper extends SQLiteOpenHelper
         TableTrack.upgrade(db);
         TableShipPosition.upgrade(db);
         TableBoa.upgrade(db);
+        TableRace.upgrade(db);
+    }
+
+    public void save(Race race)
+    {
+        TableRace.save(getWritableDatabase(), race);
     }
 
     public void save(Boa boa)
@@ -78,6 +86,11 @@ public class DBHelper extends SQLiteOpenHelper
         TableTrack.save(getWritableDatabase(), track);
     }
 
+    public void update(Race race)
+    {
+        TableRace.update(getWritableDatabase(), race);
+    }
+
     public void update(Boa boa)
     {
         TableBoa.update(getWritableDatabase(), boa);
@@ -91,6 +104,18 @@ public class DBHelper extends SQLiteOpenHelper
     public void update(Track track)
     {
         TableTrack.update(getWritableDatabase(), track);
+    }
+
+    public void saveOrUpdate(Race race)
+    {
+        if (race.getId() == -1)
+        {
+            save(race);
+        }
+        else
+        {
+            update(race);
+        }
     }
 
     public void saveOrUpdate(Boa boa)
