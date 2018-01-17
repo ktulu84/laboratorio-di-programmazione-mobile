@@ -19,7 +19,6 @@ package it.univaq.ing.myshiprace.Util;
 
 import android.content.Context;
 import android.location.Location;
-import android.preference.PreferenceManager;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -38,8 +37,7 @@ public class Utils
      */
     public static boolean requestingLocationUpdates(Context context)
     {
-        return PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(KEY_REQUESTING_LOCATION_UPDATES, false);
+        return Preferences.load(context, KEY_REQUESTING_LOCATION_UPDATES, false);
     }
 
     /**
@@ -48,19 +46,16 @@ public class Utils
      */
     public static void setRequestingLocationUpdates(Context context, boolean requestingLocationUpdates)
     {
-        PreferenceManager.getDefaultSharedPreferences(context)
-                .edit()
-                .putBoolean(KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates)
-                .apply();
+        Preferences.save(context, KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates);
     }
 
     /**
      * Returns the {@code location} object as a human readable string.
      * @param location  The {@link Location}.
      */
-    public static String getLocationText(Location location)
+    public static String getLocationText(Location location, Context context)
     {
-        return location == null ? "Unknown location" :
+        return location == null ? context.getString(R.string.unknown_location) :
                 "(" + location.getLatitude() + ", " + location.getLongitude() + ")";
     }
 
