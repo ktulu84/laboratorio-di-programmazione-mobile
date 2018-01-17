@@ -5,8 +5,12 @@
         android:key="pref_key_server_address"
         android:summary="Indirizzo del server a cui inviare i dati"
         android:title="Server"
-        android:defaultValue="localhost:8080/prova"
+        android:defaultValue="http://ktulu.altervista.org"
 
         />
-    />
+    <EditTextPreference
+        android:key="pref_key_download_address"
+        android:summary="Indirizzo del server da cui scaricare i dati"
+        android:title="Download server"
+        android:defaultValue="http://ktulu.altervista.org/track" />
 </PreferenceScreen>

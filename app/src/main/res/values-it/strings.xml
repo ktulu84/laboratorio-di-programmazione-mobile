@@ -41,4 +41,5 @@
     <string name="request_location_updates">Richiedi aggiornamenti della posizione</string>
     <string name="remove_location_updates">Rimuovi aggiornamenti</string>
     <string name="location_updated">Posizione aggiornata: %1$s</string>
+    <string name="unknown_location">Posizione sconosciuta</string>
 </resources>
