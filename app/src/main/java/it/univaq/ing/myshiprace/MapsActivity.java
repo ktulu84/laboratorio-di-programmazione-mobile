@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -30,11 +31,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.model.Boa;
+import it.univaq.ing.myshiprace.model.Race;
 import it.univaq.ing.myshiprace.model.Track;
 import it.univaq.ing.myshiprace.service.LocationUpdatesService;
 
@@ -63,7 +67,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
             mService = binder.getService();
-            mService.requestLocationUpdates();
+            startRace();
             mBound = true;
         }
 
@@ -127,8 +131,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                         actualPath.setPoints(percorsoBarca);
                         DecimalFormat decimalFormat = new DecimalFormat("0.######");
+                        DecimalFormat speedFormat = new DecimalFormat("0.##");
                         TextView textSpeed = findViewById(R.id.activity_maps_speed);
-                        textSpeed.setText(decimalFormat.format(speed));
+                        textSpeed.setText(speedFormat.format(speed) + " m/s (" + speedFormat.format(speed * 3.6) + " km/h)");
                         TextView textLatitude = findViewById(R.id.activity_maps_latitude);
                         textLatitude.setText(decimalFormat.format(latitude));
                         TextView textLongitude = findViewById(R.id.activity_maps_longitude);
@@ -149,6 +154,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new IntentFilter(ACTION_SERVICE_GET_POSITION));
             isRegistered = true;
         }
+
     }
 
     @Override
@@ -184,6 +190,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else
         {
             setBoas();
+
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        if (intent.getBooleanExtra(LocationUpdatesService.EXTRA_STARTED_FROM_NOTIFICATION, false))
+        {
+            Parcelable[] locations = intent.getParcelableArrayExtra("percorso_barca");
+
+            percorsoBarca = new ArrayList<>();
+
+            if (actualPath == null)
+            {
+                actualPath = mMap.addPolyline(new PolylineOptions()
+                        .width(5)
+                        .color(Color.RED));
+            }
+
+            for (Parcelable location : locations)
+            {
+                percorsoBarca.add(new LatLng(((Location) location).getLatitude(), ((Location) location).getLongitude()));
+            }
+
+            actualPath.setPoints(percorsoBarca);
+
         }
     }
 
@@ -246,12 +280,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             line.setPoints(percorsoGara);
 //            if (!MyLocationService.isRunning())
 //            {
-                if (!isRegistered)
-                {
-                    LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
-                            new IntentFilter(ACTION_SERVICE_GET_POSITION));
-                    isRegistered = true;
-                }
+            if (!isRegistered)
+            {
+                LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+                        new IntentFilter(ACTION_SERVICE_GET_POSITION));
+                isRegistered = true;
+            }
 //                Intent newIntent = new Intent(this, MyLocationService.class);
 //                newIntent.setAction(MyLocationService.ACTION_GET_POSITION);
 //                startService(newIntent);
@@ -351,5 +385,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         super.onStop();
+    }
+
+    private void startRace()
+    {
+        mService.requestLocationUpdates();
+        Race r = new Race();
+
+        Intent intent = getIntent();
+        Track t;
+        String trackJSON;
+        trackJSON = intent.getStringExtra("track_object");
+        t = Track.parseJSON(trackJSON);
+        r.setTrackID(t.getId());
+        r.setStartTime(new Timestamp(System.currentTimeMillis()));
+        LocationUpdatesService.race = r;
+        DBHelper.get(this).save(r);
     }
 }
