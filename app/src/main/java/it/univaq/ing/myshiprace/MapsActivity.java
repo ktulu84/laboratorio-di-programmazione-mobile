@@ -102,14 +102,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         {
                             percorsoBarca = new ArrayList<>();
 
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate));
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
-//                Log.i("POSIZIONE", "Aggiunto marker nella posizione di partenza");
-//                            MarkerOptions markerOptions = new MarkerOptions();
-//                            markerOptions.position(coordinate);
-//                            markerOptions.title("prova");
-//                            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
-//                            currentBoatposition = mMap.addMarker(markerOptions);
                             actualPath = mMap.addPolyline(new PolylineOptions()
                                     .width(5)
                                     .color(Color.RED));
@@ -130,14 +123,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             currentBoatposition = mMap.addMarker(markerOptions);
                         }
                         actualPath.setPoints(percorsoBarca);
-                        DecimalFormat decimalFormat = new DecimalFormat("0.######");
+                        DecimalFormat coordinateFormat = new DecimalFormat("0.######");
                         DecimalFormat speedFormat = new DecimalFormat("0.##");
                         TextView textSpeed = findViewById(R.id.activity_maps_speed);
                         textSpeed.setText(speedFormat.format(speed) + " m/s (" + speedFormat.format(speed * 3.6) + " km/h)");
                         TextView textLatitude = findViewById(R.id.activity_maps_latitude);
-                        textLatitude.setText(decimalFormat.format(latitude));
+                        textLatitude.setText(coordinateFormat.format(latitude));
                         TextView textLongitude = findViewById(R.id.activity_maps_longitude);
-                        textLongitude.setText(decimalFormat.format(longitude));
+                        textLongitude.setText(coordinateFormat.format(longitude));
                     }
                     break;
             }
