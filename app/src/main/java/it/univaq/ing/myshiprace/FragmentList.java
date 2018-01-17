@@ -27,6 +27,7 @@ import java.util.List;
 
 import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.Util.ClickListener;
+import it.univaq.ing.myshiprace.Util.Preferences;
 import it.univaq.ing.myshiprace.Util.RecyclerTouchListener;
 import it.univaq.ing.myshiprace.Util.Request;
 import it.univaq.ing.myshiprace.adapter.TrackAdapter;
@@ -183,7 +184,7 @@ public class FragmentList extends Fragment
         builder.setTitle("Server da cui scaricare il tracciato");
 
         final EditText input = new EditText(context);
-
+        input.setText(Preferences.load(context, "pref_key_download_address", "http://ktulu.altervista.org/track"));
         builder.setView(input);
 
         builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
