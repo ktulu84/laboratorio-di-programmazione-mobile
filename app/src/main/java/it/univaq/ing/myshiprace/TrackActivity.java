@@ -1,19 +1,26 @@
 package it.univaq.ing.myshiprace;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import it.univaq.ing.myshiprace.Database.DBHelper;
 import it.univaq.ing.myshiprace.Util.ClickListener;
@@ -92,9 +99,16 @@ public class TrackActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view)
                 {
-                    Intent intent = new Intent(view.getContext(), MapsActivity.class);
-                    intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
-                    view.getContext().startActivity(intent);
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    {
+                        ActivityCompat.requestPermissions(TrackActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
+                    else
+                    {
+                        Intent intent = new Intent(view.getContext(), MapsActivity.class);
+                        intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
+                        view.getContext().startActivity(intent);
+                    }
 //                    Toast.makeText(view.getContext(), "maronn", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -211,5 +225,50 @@ public class TrackActivity extends AppCompatActivity
             }
         });
         builder.show();
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length <= 0
+                || grantResults[0] != PackageManager.PERMISSION_GRANTED)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.important);
+
+            final TextView testo = new TextView(this);
+            testo.setText(R.string.permission_is_mandatory);
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+            testo.setPadding(padding, 0, padding, 0);
+            builder.setView(testo);
+            builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    finishAffinity();
+                }
+            });
+            builder.setOnCancelListener(new DialogInterface.OnCancelListener()
+            {
+                @Override
+                public void onCancel(DialogInterface dialog)
+                {
+                    finishAffinity();
+                }
+            });
+            builder.show();
+        }
+        else
+        {
+            switch (requestCode)
+            {
+                case 1:
+                {
+                    Toast.makeText(this, R.string.permission_granted, Toast.LENGTH_SHORT).show();
+                    break;
+                }
+            }
+        }
     }
 }

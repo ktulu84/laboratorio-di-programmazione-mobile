@@ -1,9 +1,11 @@
 package it.univaq.ing.myshiprace;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -20,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -42,6 +45,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.univaq.ing.myshiprace.Util.Preferences;
 import it.univaq.ing.myshiprace.Util.Utils;
 import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
@@ -171,16 +175,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onResume()
     {
         super.onResume();
-        if (!isRegistered)
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            registerBroadcastReceiver();
-
-            isRegistered = true;
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         }
-        if (isPaused || isChangingConfigurations())
+        else
         {
-            mService.requestUpdate();
-            isPaused = false;
+            if (!isRegistered)
+            {
+                registerBroadcastReceiver();
+
+                isRegistered = true;
+            }
+            if (isPaused || isChangingConfigurations())
+            {
+                mService.requestUpdate();
+                isPaused = false;
+            }
         }
     }
 
@@ -202,20 +213,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        Intent intent = getIntent();
-        String trackJSON;
-        trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
-        track = Track.parseJSON(trackJSON);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
-        mMap = googleMap;
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
@@ -224,13 +223,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else
         {
             Intent intent = getIntent();
-            setBoas();
-            //check if we come from notification, if it's true set track and restore boat path
-            if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
-            {
-                restorePercorsoBarca(intent);
-            }
+            String trackJSON;
+            trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
+            track = Track.parseJSON(trackJSON);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
+    }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap)
+    {
+        mMap = googleMap;
+
+        Intent intent = getIntent();
+        setBoas();
+        //check if we come from notification, if it's true set track and restore boat path
+        if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
+        {
+            restorePercorsoBarca(intent);
         }
     }
 
@@ -248,17 +260,99 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode)
+        if (grantResults.length <= 0
+                || grantResults[0] != PackageManager.PERMISSION_GRANTED)
         {
-            case 1:
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.important);
+
+            final TextView testo = new TextView(this);
+            testo.setText(R.string.permission_is_mandatory);
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+            testo.setPadding(padding, 0, padding, 0);
+            builder.setView(testo);
+            builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
             {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                @Override
+                public void onClick(DialogInterface dialog, int which)
                 {
-                    setBoas();
+                    finishAffinity();
                 }
-                break;
+            });
+            builder.setOnCancelListener(new DialogInterface.OnCancelListener()
+            {
+                @Override
+                public void onCancel(DialogInterface dialog)
+                {
+                    finishAffinity();
+                }
+            });
+            builder.show();
+        }
+        else
+        {
+            switch (requestCode)
+            {
+                case 1:
+                {
+                    Intent intent = getIntent();
+                    String trackJSON;
+                    trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
+                    track = Track.parseJSON(trackJSON);
+                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                            .findFragmentById(R.id.map);
+                    mapFragment.getMapAsync(this);
+                    break;
+                }
+                case 2:
+                {
+                    if (!isRegistered)
+                    {
+                        registerBroadcastReceiver();
+
+                        isRegistered = true;
+                    }
+                    if (isPaused || isChangingConfigurations())
+                    {
+                        mService.requestUpdate();
+                        isPaused = false;
+                    }
+                    break;
+                }
+                case 3:
+                {
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .registerOnSharedPreferenceChangeListener(this);
+
+                    startRaceButton = findViewById(R.id.start_race_button);
+                    stopRaceButton = findViewById(R.id.stop_race_button);
+
+                    startRaceButton.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            startRace();
+                        }
+                    });
+
+                    stopRaceButton.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mService.removeLocationUpdates();
+                        }
+                    });
+
+                    // Restore the state of the buttons when the activity (re)launches.
+                    setButtonsState(Utils.requestingLocationUpdates(this));
+                    // Bind to the service. If the service is in foreground mode, this signals to the service
+                    // that since this activity is in the foreground, the service can exit foreground mode.
+                    bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
+                            Context.BIND_AUTO_CREATE);
+//        mService.requestLocationUpdates();
+                }
             }
         }
     }
@@ -287,38 +381,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStart()
     {
         super.onStart();
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
 
-        startRaceButton = findViewById(R.id.start_race_button);
-        stopRaceButton = findViewById(R.id.stop_race_button);
-
-        startRaceButton.setOnClickListener(new View.OnClickListener()
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            @Override
-            public void onClick(View view)
-            {
-                startRace();
-            }
-        });
-
-        stopRaceButton.setOnClickListener(new View.OnClickListener()
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 3);
+        }
+        else
         {
-            @Override
-            public void onClick(View view)
-            {
-                mService.removeLocationUpdates();
-            }
-        });
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .registerOnSharedPreferenceChangeListener(this);
 
-        // Restore the state of the buttons when the activity (re)launches.
-        setButtonsState(Utils.requestingLocationUpdates(this));
-        // Bind to the service. If the service is in foreground mode, this signals to the service
-        // that since this activity is in the foreground, the service can exit foreground mode.
-        bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
-                Context.BIND_AUTO_CREATE);
+            startRaceButton = findViewById(R.id.start_race_button);
+            stopRaceButton = findViewById(R.id.stop_race_button);
+
+            startRaceButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    startRace();
+                }
+            });
+
+            stopRaceButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    mService.removeLocationUpdates();
+                }
+            });
+
+            // Restore the state of the buttons when the activity (re)launches.
+            setButtonsState(Utils.requestingLocationUpdates(this));
+            // Bind to the service. If the service is in foreground mode, this signals to the service
+            // that since this activity is in the foreground, the service can exit foreground mode.
+            bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
+                    Context.BIND_AUTO_CREATE);
 //        mService.requestLocationUpdates();
-
+        }
     }
 
     @Override
@@ -403,6 +504,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void setBoas()
     {
+        float radius = Preferences.load(this, "pref_key_circle_radius", 20);
         if (boaMarkers == null)
         {
             boaMarkers = new ArrayList<>();
@@ -428,7 +530,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             boaMarkers.add(mMap.addMarker(marker));
             mMap.addCircle(new CircleOptions()
                     .center(new LatLng(b.getLatitude(), b.getLongitude()))
-                    .radius(20)
+                    .radius(radius)
                     .strokeColor(Color.RED)
                     .strokeWidth(2)
                     .fillColor(Color.argb(80, 0, 0, 255)));
@@ -443,7 +545,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 boaMarkers.add(mMap.addMarker(marker));
                 mMap.addCircle(new CircleOptions()
                         .center(new LatLng(b.getLatitude(), b.getLongitude()))
-                        .radius(20)
+                        .radius(radius)
                         .strokeColor(Color.RED)
                         .strokeWidth(2)
                         .fillColor(Color.argb(80, 0, 0, 255)));
@@ -462,7 +564,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 boaMarkers.add(mMap.addMarker(marker));
                 mMap.addCircle(new CircleOptions()
                         .center(new LatLng(b.getLatitude(), b.getLongitude()))
-                        .radius(20)
+                        .radius(radius)
                         .strokeColor(Color.RED)
                         .strokeWidth(2)
                         .fillColor(Color.argb(80, 0, 0, 255)));
@@ -535,14 +637,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     {
         DecimalFormat coordinateFormat = new DecimalFormat("0.######");
         DecimalFormat speedFormat = new DecimalFormat("0.##");
+        DecimalFormat distanceFormat = new DecimalFormat("0.#");
         TextView textSpeed = findViewById(R.id.activity_maps_speed);
-        textSpeed.setText(speedFormat.format(speed) + "m/s");
+        textSpeed.setText(speedFormat.format(speed) + " m/s");
         TextView textSpeedkmh = findViewById(R.id.activity_maps_speed_kmh);
-        textSpeedkmh.setText(speedFormat.format(speed * 3.6) + "km/h");
+        textSpeedkmh.setText(speedFormat.format(speed * 3.6) + " km/h");
         TextView textLatitude = findViewById(R.id.activity_maps_latitude);
         textLatitude.setText(coordinateFormat.format(latitude));
         TextView textLongitude = findViewById(R.id.activity_maps_longitude);
         textLongitude.setText(coordinateFormat.format(longitude));
+        TextView textDistance = findViewById(R.id.activity_maps_distance);
+        textDistance.setText(distanceFormat.format(distance) + " m");
     }
 
     private void registerBroadcastReceiver()

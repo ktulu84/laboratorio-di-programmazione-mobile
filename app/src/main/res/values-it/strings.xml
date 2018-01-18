@@ -50,4 +50,16 @@
     <string name="approaching_finish">Ci stiamo avvicinando al traguardo</string>
     <string name="next_buoy">"Prossima boa: boa "</string>
     <string name="next_buoy_finish">Prossima boa: arrivo</string>
+    <string name="permission_granted">Permesso accordato</string>
+    <string name="permission_is_mandatory">Questa applicazione ha bisogno dell\'accesso alla posizione. L\'applicazione verrà chiusa</string>
+    <string name="pref_server_address_description">Indirizzo del server a cui inviare i dati</string>
+    <string name="pref_server_address_title">Server</string>
+    <string name="pref_download_address_description">Indirizzo del server da cui scaricare i dati</string>
+    <string name="pref_download_address_title">Download server</string>
+    <string name="pref_ship_name_description">Il nome della tua barca</string>
+    <string name="pref_ship_name_title">Nome barca</string>
+    <string name="pref_distance_description">Distanza di avvicinamento boa</string>
+    <string name="pref_distance_title">Distanza</string>
+    <string name="important">IMPORTANTE</string>
+    <string name="set_a_ship_name">Imposta un nome per la tua barca nelle impostazioni (menu a lato)</string>
 </resources>

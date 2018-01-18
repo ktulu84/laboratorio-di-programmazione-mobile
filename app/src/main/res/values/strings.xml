@@ -54,4 +54,16 @@
     <string name="approaching_finish">Approaching finish line</string>
     <string name="next_buoy">"Next buoy: buoy "</string>
     <string name="next_buoy_finish">Next buoy: finish</string>
+    <string name="permission_granted">Permission granted</string>
+    <string name="permission_is_mandatory">Location permission is mandatory for this application. The application will now close</string>
+    <string name="pref_server_address_description">Upload server address</string>
+    <string name="pref_server_address_title">Server</string>
+    <string name="pref_download_address_description">Download track server address</string>
+    <string name="pref_download_address_title">Download server</string>
+    <string name="pref_ship_name_description">Your ship name</string>
+    <string name="pref_ship_name_title">Ship name</string>
+    <string name="pref_distance_description">Approaching buoy distance</string>
+    <string name="pref_distance_title">Distance</string>
+    <string name="important">IMPORTANT</string>
+    <string name="set_a_ship_name">Set a ship name in settings (lateral menu)</string>
 </resources>

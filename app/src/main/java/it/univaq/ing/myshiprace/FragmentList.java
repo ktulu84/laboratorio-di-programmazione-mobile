@@ -18,10 +18,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -97,6 +99,22 @@ public class FragmentList extends Fragment
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
 //        new MyTask().execute();
+
+        if (Preferences.load(container.getContext(), "first_time", true))
+        {
+            Preferences.save(container.getContext(), "first_time", false);
+            AlertDialog.Builder builder = new AlertDialog.Builder(container.getContext());
+            builder.setTitle(R.string.important);
+
+            final TextView testo = new TextView(container.getContext());
+            testo.setText(R.string.set_a_ship_name);
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+            testo.setPadding(padding, 0, padding, 0);
+            builder.setView(testo);
+            builder.setPositiveButton(R.string.alert_ok, null);
+            builder.show();
+        }
+
         View view = inflater.inflate(R.layout.activity_lista, container, false);
         context = view.getContext();
         FloatingActionButton fabAdd = view.findViewById(R.id.activity_lista_fab);

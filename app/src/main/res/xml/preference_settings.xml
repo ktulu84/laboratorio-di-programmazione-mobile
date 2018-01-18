@@ -4,17 +4,23 @@
     <EditTextPreference
         android:defaultValue="http://ktulu.altervista.org"
         android:key="pref_key_server_address"
-        android:summary="Indirizzo del server a cui inviare i dati"
-        android:title="Server" />
+        android:summary="@string/pref_server_address_description"
+        android:title="@string/pref_server_address_title" />
 
     <EditTextPreference
         android:defaultValue="http://ktulu.altervista.org/track"
         android:key="pref_key_download_address"
-        android:summary="Indirizzo del server da cui scaricare i dati"
-        android:title="Download server" />
+        android:summary="@string/pref_download_address_description"
+        android:title="@string/pref_download_address_title" />
 
     <EditTextPreference
         android:key="pref_key_ship_name"
-        android:summary="The name used to identify your ship"
-        android:title="Ship name" />
+        android:summary="@string/pref_ship_name_description"
+        android:title="@string/pref_ship_name_title" />
+    <EditTextPreference
+        android:key="pref_key_circle_radius"
+        android:defaultValue="20"
+        android:inputType="number"
+        android:summary="@string/pref_distance_description"
+        android:title="@string/pref_distance_title" />
 </PreferenceScreen>

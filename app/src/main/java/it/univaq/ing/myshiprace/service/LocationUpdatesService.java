@@ -456,7 +456,7 @@ public class LocationUpdatesService extends Service
             boalocation.setLongitude(track.getBoa(currentBoa).getLongitude());
             float distance = location.distanceTo(boalocation);
             intent.putExtra(INTENT_DISTANCE, distance);
-            if (distance < 20.0)
+            if (distance < Preferences.load(this, "pref_key_circle_radius", 20))
             {
                 intent.putExtra(INTENT_NEAR_BOA, true);
                 intent.putExtra(INTENT_BOA_NUMBER, currentBoa);

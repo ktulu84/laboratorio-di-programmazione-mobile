@@ -42,4 +42,12 @@ public class Preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         return pref.getString(key, fallback);
     }
+
+    public static float load(Context context, String key, float fallback)
+    {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        Float f = Float.valueOf(fallback);
+        float r = Float.valueOf(pref.getString(key, f.toString()));
+        return r;
+    }
 }
