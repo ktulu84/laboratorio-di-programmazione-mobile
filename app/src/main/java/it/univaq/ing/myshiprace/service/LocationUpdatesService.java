@@ -66,18 +66,8 @@ import it.univaq.ing.myshiprace.model.ShipPosition;
 import it.univaq.ing.myshiprace.model.Track;
 
 /**
- * A bound and started service that is promoted to a foreground service when location updates have
- * been requested and all clients unbind.
- * <p>
- * For apps running in the background on "O" devices, location is computed only once every 10
- * minutes and delivered batched every 30 minutes. This restriction applies even to apps
- * targeting "N" or lower which are run on "O" devices.
- * <p>
- * This sample show how to use a long-running service for location updates. When an activity is
- * bound to this service, frequent location updates are permitted. When the activity is removed
- * from the foreground, the service promotes itself to a foreground service, and location updates
- * continue. When the activity comes back to the foreground, the foreground service stops, and the
- * notification assocaited with that service is removed.
+ * Service used to get locations update. When all the activities unbind from this service it is promoted to foreground service.
+ * Code based on https://github.com/googlesamples/android-play-location
  */
 public class LocationUpdatesService extends Service
 {
@@ -85,9 +75,12 @@ public class LocationUpdatesService extends Service
     private static final String PACKAGE_NAME = "it.univaq.ing.myshiprace.locationupdatesforegroundservice";
 
     private static final String TAG = LocationUpdatesService.class.getSimpleName();
+
+    // Actions privided by this service
     public static final String ACTION_SERVICE_GET_NEW_POSITION = PACKAGE_NAME + ".get_position";
     public static final String ACTION_SERVICE_GET_UPDATED_TRACK = PACKAGE_NAME + ".get_update";
 
+    // Intent filters provided by this service
     public static final String INTENT_LOCATION = PACKAGE_NAME + ".location";
     public static final String INTENT_SPEED = PACKAGE_NAME + ".speed";
     public static final String INTENT_BEARING = PACKAGE_NAME + ".bearing";
@@ -168,7 +161,7 @@ public class LocationUpdatesService extends Service
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.d("RECEIVER", "ho ricevuto qualcosa: " + intent.getAction());
+//            Log.d("RECEIVER", "ho ricevuto qualcosa: " + intent.getAction());
             sendShipPositions();
         }
     };
@@ -182,7 +175,6 @@ public class LocationUpdatesService extends Service
         DBHelper.get(this).save(race);
         track = t;
         currentBoa = 1;
-//        return race;
     }
 
     @Override
@@ -248,7 +240,7 @@ public class LocationUpdatesService extends Service
     @Override
     public IBinder onBind(Intent intent)
     {
-        // Called when a client (MainActivity in case of this sample) comes to the foreground
+        // Called when a client comes to the foreground
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
         Log.i(TAG, "in onBind()");
@@ -293,8 +285,7 @@ public class LocationUpdatesService extends Service
     }
 
     /**
-     * Makes a request for location updates. Note that in this sample we merely log the
-     * {@link SecurityException}.
+     * Makes a request for location updates
      */
     public void requestLocationUpdates()
     {
@@ -316,8 +307,7 @@ public class LocationUpdatesService extends Service
     }
 
     /**
-     * Removes location updates. Note that in this sample we merely log the
-     * {@link SecurityException}.
+     * Removes location updates.
      */
     public void removeLocationUpdates()
     {
@@ -337,20 +327,25 @@ public class LocationUpdatesService extends Service
     }
 
     /**
-     * Returns the {@link NotificationCompat} used as part of the foreground service.
+     * Returns the notification used as part of the foreground service.
      */
     private Notification getNotification()
     {
         Intent intent = new Intent(this, LocationUpdatesService.class);
 
-        CharSequence text = Utils.getLocationText(mLocation, this);
+        String text;
         StringBuilder bigText = new StringBuilder();
-        bigText.append(Utils.getLocationText(mLocation, this)).append(System.getProperty("line.separator"));
-        if (currentBoa < track.length() - 1)
-            bigText.append(getString(R.string.next_buoy) + currentBoa);
-        else
-            bigText.append(getString(R.string.next_buoy_finish));
 
+        if (currentBoa < track.length() - 1)
+        {
+            text = getString(R.string.next_buoy) + currentBoa;
+        }
+        else
+        {
+            text = getString(R.string.next_buoy_finish);
+        }
+        bigText.append(text).append(System.getProperty("line.separator"));
+        bigText.append(Utils.getLocationText(mLocation, this));
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(INTENT_STARTED_FROM_NOTIFICATION, true);
 
@@ -445,11 +440,11 @@ public class LocationUpdatesService extends Service
                 bearing += 180;
             bearing -= 90;
             mLocation = location;
+
             // Notify anyone listening for broadcasts about the new location.
             Intent intent = new Intent(ACTION_SERVICE_GET_NEW_POSITION);
             intent.putExtra(INTENT_LOCATION, location);
             intent.putExtra(INTENT_SPEED, speed);
-//            Log.e("SPEED", String.valueOf(speed));
             intent.putExtra(INTENT_BEARING, bearing);
             Location boalocation = new Location("");
             boalocation.setLatitude(track.getBoa(currentBoa).getLatitude());
@@ -489,8 +484,7 @@ public class LocationUpdatesService extends Service
     }
 
     /**
-     * Class used for the client Binder.  Since this service runs in the same process as its
-     * clients, we don't need to deal with IPC.
+     * Class used for the client Binder
      */
     public class LocalBinder extends Binder
     {
@@ -502,8 +496,6 @@ public class LocationUpdatesService extends Service
 
     /**
      * Returns true if this is a foreground service.
-     *
-     * @param context The {@link Context}.
      */
     public boolean serviceIsRunningInForeground(Context context)
     {
@@ -523,6 +515,9 @@ public class LocationUpdatesService extends Service
         return false;
     }
 
+    /*
+     * Used to save the ship position (and trying to upload to the server)
+     */
     private void saveShipPosition(Location location)
     {
         ShipPosition s = new ShipPosition();
@@ -535,6 +530,9 @@ public class LocationUpdatesService extends Service
         sendShipPositions();
     }
 
+    /*
+     * Send unsent ship positions to server
+     */
     public void sendShipPositions()
     {
         if (isNetworkAvailable())
@@ -543,6 +541,10 @@ public class LocationUpdatesService extends Service
             new MyTask().execute(ships);
         }
     }
+
+    /*
+     * Used by MapsActivity to request updated track path data (after activity resuming)
+     */
 
     public boolean requestUpdate()
     {
@@ -554,7 +556,6 @@ public class LocationUpdatesService extends Service
 //            intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, DBHelper.get(this).getRaceTrack(race.getTrackID()).toJSONArray().toString());
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
             return true;
-
         }
         else
         {
@@ -562,6 +563,9 @@ public class LocationUpdatesService extends Service
         }
     }
 
+    /*
+     * called by sendShipPositions to send data to server
+     */
     private class MyTask extends AsyncTask<ShipPosition, Void, Void>
     {
         @Override
@@ -595,24 +599,4 @@ public class LocationUpdatesService extends Service
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
-
-//    private boolean isOnline()
-//    {
-//        Runtime runtime = Runtime.getRuntime();
-//        try
-//        {
-//            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-//            int exitValue = ipProcess.waitFor();
-//            return (exitValue == 0);
-//        }
-//        catch (IOException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        catch (InterruptedException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        return false;
-//    }
 }

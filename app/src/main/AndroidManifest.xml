@@ -65,7 +65,6 @@
         </activity>
 
         <service android:name=".service.MyService" />
-        <service android:name=".service.MyLocationService" />
         <service android:name=".service.LocationUpdatesService" />
 
         <activity

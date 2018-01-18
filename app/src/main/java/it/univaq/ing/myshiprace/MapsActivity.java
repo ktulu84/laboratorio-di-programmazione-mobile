@@ -53,8 +53,6 @@ import it.univaq.ing.myshiprace.service.LocationUpdatesService;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, SharedPreferences.OnSharedPreferenceChangeListener
 {
-    //    public static final String ACTION_SERVICE_GET_POSITION = "action_service_get_position";
-//    public static final String ACTION_SERVICE_GET_UPDATE = "action_service_get_update";
     GoogleMap mMap;
     List<LatLng> percorsoGara;
     List<LatLng> percorsoBarca;
@@ -63,6 +61,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker currentBoatposition;
     private Polyline actualPath;
     private boolean isRegistered = false;
+
     // A reference to the service used to get location updates.
     private LocationUpdatesService mService = null;
 
@@ -170,7 +169,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
-
     @Override
     public void onResume()
     {
@@ -240,16 +238,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = getIntent();
         setBoas();
         //check if we come from notification, if it's true set track and restore boat path
-        if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
-        {
-            restorePercorsoBarca(intent);
-        }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent)
-    {
-        super.onNewIntent(intent);
         if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
         {
             restorePercorsoBarca(intent);
@@ -454,6 +442,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     {
         Parcelable[] locations = intent.getParcelableArrayExtra(LocationUpdatesService.INTENT_PERCORSO_BARCA);
         currentBoa = intent.getIntExtra(LocationUpdatesService.INTENT_BOA_NUMBER, -1);
+
         if (currentBoa > -1)
         {
             boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
@@ -486,20 +475,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void putCurrentPositionMarker(LatLng pos, float bearing)
     {
-        if (currentBoatposition == null)
+        if (pos != null)
         {
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.title(getString(R.string.current_position));
-            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
-            markerOptions.position(pos);
-            currentBoatposition = mMap.addMarker(markerOptions);
+            if (currentBoatposition == null)
+            {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(getString(R.string.current_position));
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
+                markerOptions.position(pos);
+                currentBoatposition = mMap.addMarker(markerOptions);
+            }
+            else
+            {
+                currentBoatposition.setPosition(pos);
+            }
+            currentBoatposition.setRotation(bearing);
         }
-        else
-        {
-            currentBoatposition.setPosition(pos);
-        }
-        currentBoatposition.setRotation(bearing);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
     }
 
     private void setBoas()
