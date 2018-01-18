@@ -62,6 +62,22 @@ public class MyService extends IntentService
         }
     }
 
+    private void saveInDB(Boa boa)
+    {
+
+        DBHelper.get(getApplicationContext()).save(boa);
+    }
+
+    private void getFromDB()
+    {
+
+        List<Track> tracks = DBHelper.get(getApplicationContext()).getAllTracks();
+
+        Intent intent = new Intent(FragmentList.ACTION_SERVICE_DB_GET_ALL_TRACKS);
+        intent.putExtra("data", Track.toJSONArray(tracks).toString());
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
     private void saveOrUpdateInDB(Boa boa)
     {
         DBHelper.get(getApplicationContext()).saveOrUpdate(boa);
@@ -77,12 +93,6 @@ public class MyService extends IntentService
         DBHelper.get(getApplicationContext()).saveOrUpdate(track);
     }
 
-    private void saveInDB(Boa boa)
-    {
-
-        DBHelper.get(getApplicationContext()).save(boa);
-    }
-
     private void saveInDB(Track track)
     {
 
@@ -93,15 +103,5 @@ public class MyService extends IntentService
     {
 
         DBHelper.get(getApplicationContext()).save(shipPosition);
-    }
-
-    private void getFromDB()
-    {
-
-        List<Track> tracks = DBHelper.get(getApplicationContext()).getAllTracks();
-
-        Intent intent = new Intent(FragmentList.ACTION_SERVICE_DB_GET_ALL_TRACKS);
-        intent.putExtra("data", Track.toJSONArray(tracks).toString());
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 }

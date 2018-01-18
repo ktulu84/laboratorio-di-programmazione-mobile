@@ -70,28 +70,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item)
-    {
-        int id = item.getItemId();
-        switch (id)
-        {
-            case R.id.nav_lista:
-                getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentList()).commit();
-                break;
-            case R.id.nav_info:
-                getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentInfo()).commit();
-                break;
-            case R.id.nav_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-                break;
-        }
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         switch (requestCode)
@@ -135,5 +113,27 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case R.id.nav_lista:
+                getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentList()).commit();
+                break;
+            case R.id.nav_info:
+                getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentInfo()).commit();
+                break;
+            case R.id.nav_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+        }
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

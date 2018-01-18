@@ -170,13 +170,6 @@ public class TrackActivity extends AppCompatActivity
         adb.show();
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-        outState.putString(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
-    }
-
     private void showDialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -225,6 +218,13 @@ public class TrackActivity extends AppCompatActivity
             }
         });
         builder.show();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putString(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)

@@ -71,28 +71,6 @@ public class FragmentList extends Fragment
         }
     };
 
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-
-        IntentFilter filter = new IntentFilter(ACTION_SERVICE_DB_GET_ALL_TRACKS);
-//        filter.addAction(ACTION_SERVICE_DB_GET_ALL_TRACKS);
-        Context c = getActivity().getApplicationContext();
-        LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
-
-        Intent newIntent = new Intent(c, MyService.class);
-        newIntent.setAction(MyService.ACTION_GETALL_TRACKS);
-        getActivity().startService(newIntent);
-    }
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-        LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(receiver);
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
@@ -160,6 +138,28 @@ public class FragmentList extends Fragment
         }));
 
         return view;
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        IntentFilter filter = new IntentFilter(ACTION_SERVICE_DB_GET_ALL_TRACKS);
+//        filter.addAction(ACTION_SERVICE_DB_GET_ALL_TRACKS);
+        Context c = getActivity().getApplicationContext();
+        LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
+
+        Intent newIntent = new Intent(c, MyService.class);
+        newIntent.setAction(MyService.ACTION_GETALL_TRACKS);
+        getActivity().startService(newIntent);
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(receiver);
     }
 
     private void showDialog()

@@ -18,6 +18,34 @@ public class Race
     public static final String RACE_JSON_NAME_START = "race_start";
     public static final String RACE_JSON_NAME_ID = "race_id";
     public static final String RACE_JSON_NAME_TRACK_ID = "track_id";
+    private Timestamp startTime;
+    private List<ShipPosition> path;
+    private int id;
+    private int trackID;
+
+    public Race()
+    {
+        startTime = new Timestamp(System.currentTimeMillis());
+        trackID = -1;
+        path = new ArrayList<>();
+        id = -1;
+    }
+
+    public Race(int trackID)
+    {
+        this.trackID = trackID;
+        startTime = new Timestamp(System.currentTimeMillis());
+        path = new ArrayList<>();
+        id = -1;
+    }
+
+    public Race(Timestamp timestamp)
+    {
+        startTime = timestamp;
+        trackID = -1;
+        path = new ArrayList<>();
+        id = -1;
+    }
 
     public static List<Race> fromJSONArray(String jsonString)
     {
@@ -71,117 +99,10 @@ public class Race
         return r;
     }
 
-    private Timestamp startTime;
-    private List<ShipPosition> path;
-    private int id;
-    private int trackID;
-
-    public void setStartTime(Timestamp startTime)
-    {
-        this.startTime = startTime;
-    }
-
-    public List<ShipPosition> getPath()
-    {
-        return path;
-    }
-
-    public void setPath(List<ShipPosition> path)
-    {
-        this.path = path;
-    }
-
-    public int getTrackID()
-    {
-        return trackID;
-    }
-
-    public void setTrackID(int trackID)
-    {
-        this.trackID = trackID;
-    }
-
-    public int getId()
-    {
-        return id;
-    }
-
-
-    public void setId(int id)
-    {
-        this.id = id;
-    }
-
-    public Race()
-    {
-        startTime = new Timestamp(System.currentTimeMillis());
-        trackID = -1;
-        path = new ArrayList<>();
-        id = -1;
-    }
-
-    public Race(int trackID)
-    {
-        this.trackID = trackID;
-        startTime = new Timestamp(System.currentTimeMillis());
-        path = new ArrayList<>();
-        id = -1;
-    }
-
-    public Race(Timestamp timestamp)
-    {
-        startTime = timestamp;
-        trackID = -1;
-        path = new ArrayList<>();
-        id = -1;
-    }
-
     public void addPosition(ShipPosition p)
     {
         path.add(p);
         Collections.sort(path);
-    }
-
-    public void removePosition(ShipPosition b)
-    {
-        if (path.contains(b))
-        {
-            path.remove(b);
-        }
-    }
-
-
-    public void removePosition(int position)
-    {
-        if (position < this.path.size())
-        {
-            path.remove(position);
-        }
-    }
-
-    public void clearPath()
-    {
-        path.clear();
-    }
-
-    public boolean contains(ShipPosition b)
-    {
-        return path.contains(b);
-    }
-
-    public Timestamp getStartTime()
-    {
-        return startTime;
-    }
-
-    public int length()
-    {
-        return path.size();
-    }
-
-    public ShipPosition getPosition(int pos)
-    {
-        return path.get(pos);
     }
 
     public static JSONArray toJSONArray(List<Race> races)
@@ -220,6 +141,82 @@ public class Race
             }
         }
         return jsonArray;
+    }
+
+    public Timestamp getStartTime()
+    {
+        return startTime;
+    }
+
+    public void setStartTime(Timestamp startTime)
+    {
+        this.startTime = startTime;
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public int getTrackID()
+    {
+        return trackID;
+    }
+
+    public void setTrackID(int trackID)
+    {
+        this.trackID = trackID;
+    }
+
+    public int length()
+    {
+        return path.size();
+    }
+
+    public ShipPosition getPosition(int pos)
+    {
+        return path.get(pos);
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
+    public List<ShipPosition> getPath()
+    {
+        return path;
+    }
+
+    public void setPath(List<ShipPosition> path)
+    {
+        this.path = path;
+    }
+
+    public void removePosition(ShipPosition b)
+    {
+        if (path.contains(b))
+        {
+            path.remove(b);
+        }
+    }
+
+    public void removePosition(int position)
+    {
+        if (position < this.path.size())
+        {
+            path.remove(position);
+        }
+    }
+
+    public void clearPath()
+    {
+        path.clear();
+    }
+
+    public boolean contains(ShipPosition b)
+    {
+        return path.contains(b);
     }
 
     public String toString()

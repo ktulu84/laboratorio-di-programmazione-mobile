@@ -31,6 +31,18 @@ public class TableShipPosition
     static final String RACE_ID = "race_id";
     static final String TRANSMITTED = "transmitted";
 
+    public static void upgrade(SQLiteDatabase db)
+    {
+        drop(db);
+        create(db);
+    }
+
+    public static void drop(SQLiteDatabase db)
+    {
+        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
+        db.execSQL(sql);
+    }
+
     public static void create(SQLiteDatabase db)
     {
         String sql = "CREATE TABLE " + TABLE_NAME + "(" +
@@ -45,18 +57,6 @@ public class TableShipPosition
                 "REFERENCES " + TableRace.TABLE_NAME + "(" + TableRace.ID + ")" +
                 ")";
         db.execSQL(sql);
-    }
-
-    public static void drop(SQLiteDatabase db)
-    {
-        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
-        db.execSQL(sql);
-    }
-
-    public static void upgrade(SQLiteDatabase db)
-    {
-        drop(db);
-        create(db);
     }
 
     public static void save(SQLiteDatabase db, ShipPosition shipPosition)

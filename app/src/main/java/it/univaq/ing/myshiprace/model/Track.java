@@ -16,6 +16,24 @@ public class Track
 {
     public static final String TRACK_JSON_NAME = "track_name";
     public static final String TRACK_JSON_ID = "track_id";
+    private String trackName;
+    private List<Boa> trackPath;
+    private int id;
+
+    public Track()
+    {
+        trackName = "";
+        trackPath = new ArrayList<>();
+        id = -1;
+    }
+
+    public Track(String name)
+    {
+        trackName = name;
+        trackPath = new ArrayList<>();
+        id = -1;
+    }
+
     public static List<Track> fromJSONArray(String jsonString)
     {
         List<Track> tracks = new ArrayList<>();
@@ -67,89 +85,10 @@ public class Track
         return r;
     }
 
-    private String trackName;
-    private List<Boa> trackPath;
-    private int id;
-
-    public int getId()
-    {
-        return id;
-    }
-
-    public void setTrackName(String trackName)
-    {
-        this.trackName = trackName;
-    }
-
-    public void setId(int id)
-    {
-        this.id = id;
-    }
-
-    public Track()
-    {
-        trackName = "";
-        trackPath = new ArrayList<>();
-        id = -1;
-    }
-
-    public Track(String name)
-    {
-        trackName = name;
-        trackPath = new ArrayList<>();
-        id = -1;
-    }
-
     public void addBoa(Boa b)
     {
         trackPath.add(b);
         Collections.sort(trackPath);
-    }
-
-    public void removeBoa(Boa b)
-    {
-        if (trackPath.contains(b))
-        {
-            trackPath.remove(b);
-        }
-    }
-
-    public List<Boa> getBoas()
-    {
-        return trackPath;
-    }
-
-    public void removeBoa(int position)
-    {
-        if (position < this.trackPath.size())
-        {
-            trackPath.remove(position);
-        }
-    }
-
-    public void clearTrack()
-    {
-        trackPath.clear();
-    }
-
-    public boolean contains(Boa b)
-    {
-        return trackPath.contains(b);
-    }
-
-    public String getTrackName()
-    {
-        return trackName;
-    }
-
-    public int length()
-    {
-        return trackPath.size();
-    }
-
-    public Boa getBoa(int pos)
-    {
-        return trackPath.get(pos);
     }
 
     public static JSONArray toJSONArray(List<Track> tracks)
@@ -187,6 +126,67 @@ public class Track
             }
         }
         return jsonArray;
+    }
+
+    public String getTrackName()
+    {
+        return trackName;
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
+    public int length()
+    {
+        return trackPath.size();
+    }
+
+    public Boa getBoa(int pos)
+    {
+        return trackPath.get(pos);
+    }
+
+    public void setTrackName(String trackName)
+    {
+        this.trackName = trackName;
+    }
+
+    public void removeBoa(Boa b)
+    {
+        if (trackPath.contains(b))
+        {
+            trackPath.remove(b);
+        }
+    }
+
+    public List<Boa> getBoas()
+    {
+        return trackPath;
+    }
+
+    public void removeBoa(int position)
+    {
+        if (position < this.trackPath.size())
+        {
+            trackPath.remove(position);
+        }
+    }
+
+    public void clearTrack()
+    {
+        trackPath.clear();
+    }
+
+    public boolean contains(Boa b)
+    {
+        return trackPath.contains(b);
     }
 
     public String toString()

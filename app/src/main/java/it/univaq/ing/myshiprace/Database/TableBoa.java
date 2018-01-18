@@ -19,14 +19,24 @@ import it.univaq.ing.myshiprace.model.Boa;
 
 public class TableBoa
 {
-
     static final String TABLE_NAME = "boas";
-
     static final String ID = "id";
     static final String ORDER = "boa_order";
     static final String LATITUDE = "latitude";
     static final String LONGITUDE = "longitude";
     static final String TRACK_ID = "track_id";
+
+    public static void upgrade(SQLiteDatabase db)
+    {
+        drop(db);
+        create(db);
+    }
+
+    public static void drop(SQLiteDatabase db)
+    {
+        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
+        db.execSQL(sql);
+    }
 
     public static void create(SQLiteDatabase db)
     {
@@ -40,18 +50,6 @@ public class TableBoa
                 "REFERENCES " + TableTrack.TABLE_NAME + "(" + TableTrack.ID + ") ON DELETE CASCADE" +
                 ")";
         db.execSQL(sql);
-    }
-
-    public static void drop(SQLiteDatabase db)
-    {
-        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
-        db.execSQL(sql);
-    }
-
-    public static void upgrade(SQLiteDatabase db)
-    {
-        drop(db);
-        create(db);
     }
 
     public static void save(SQLiteDatabase db, Boa boa)

@@ -56,8 +56,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     GoogleMap mMap;
     List<LatLng> percorsoGara;
     List<LatLng> percorsoBarca;
-    private Track track;
     boolean firstLoaded = true;
+    private Track track;
     private Marker currentBoatposition;
     private Polyline actualPath;
     private boolean isRegistered = false;
@@ -170,6 +170,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     @Override
+    protected void onPause()
+    {
+        super.onPause();
+        if (isRegistered)
+        {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+            isRegistered = false;
+        }
+        isPaused = true;
+    }
+
+    @Override
     public void onResume()
     {
         super.onResume();
@@ -190,57 +202,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mService.requestUpdate();
                 isPaused = false;
             }
-        }
-    }
-
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-        if (isRegistered)
-        {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-            isRegistered = false;
-        }
-        isPaused = true;
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
-
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        else
-        {
-            Intent intent = getIntent();
-            String trackJSON;
-            trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
-            track = Track.parseJSON(trackJSON);
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
-        }
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
-        mMap = googleMap;
-
-        Intent intent = getIntent();
-        setBoas();
-        //check if we come from notification, if it's true set track and restore boat path
-        if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
-        {
-            restorePercorsoBarca(intent);
         }
     }
 
@@ -345,23 +306,58 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState)
+    private void startRace()
     {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("first_load", firstLoaded);
-        outState.putInt("current_boa", currentBoa);
+        mService.startRace(track);
+        mService.requestLocationUpdates();
+        currentBoa = 1;
+        boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+    }
+
+    private void setButtonsState(boolean requestingLocationUpdates)
+    {
+        if (requestingLocationUpdates)
+        {
+            startRaceButton.setEnabled(false);
+            stopRaceButton.setEnabled(true);
+        }
+        else
+        {
+            startRaceButton.setEnabled(true);
+            stopRaceButton.setEnabled(false);
+        }
+    }
+
+    private void registerBroadcastReceiver()
+    {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_NEW_POSITION);
+        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_UPDATED_TRACK);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    protected void onCreate(Bundle savedInstanceState)
     {
-        super.onRestoreInstanceState(savedInstanceState);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
 
-        if (savedInstanceState != null && !savedInstanceState.isEmpty())
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            firstLoaded = savedInstanceState.getBoolean("first_load");
-            currentBoa = savedInstanceState.getInt("current_boa");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        else
+        {
+            Intent intent = getIntent();
+            String trackJSON;
+            trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
+            track = Track.parseJSON(trackJSON);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
         }
     }
 
@@ -426,70 +422,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStop();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("first_load", firstLoaded);
+        outState.putInt("current_boa", currentBoa);
+    }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s)
+    public void onMapReady(GoogleMap googleMap)
     {
-        // Update the buttons state depending on whether location updates are being requested.
-        if (s.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES))
+        mMap = googleMap;
+
+        Intent intent = getIntent();
+        setBoas();
+        //check if we come from notification, if it's true set track and restore boat path
+        if (intent.getBooleanExtra(LocationUpdatesService.INTENT_STARTED_FROM_NOTIFICATION, false))
         {
-            setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES,
-                    false));
-        }
-    }
-
-    private void restorePercorsoBarca(Intent intent)
-    {
-        Parcelable[] locations = intent.getParcelableArrayExtra(LocationUpdatesService.INTENT_PERCORSO_BARCA);
-        currentBoa = intent.getIntExtra(LocationUpdatesService.INTENT_BOA_NUMBER, -1);
-
-        if (currentBoa > -1)
-        {
-            boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-        }
-
-        percorsoBarca = new ArrayList<>();
-
-        if (actualPath == null)
-        {
-            actualPath = mMap.addPolyline(new PolylineOptions()
-                    .width(5)
-                    .color(Color.RED));
-        }
-
-        for (Parcelable location : locations)
-        {
-            percorsoBarca.add(new LatLng(((Location) location).getLatitude(), ((Location) location).getLongitude()));
-        }
-
-        actualPath.setPoints(percorsoBarca);
-        LatLng pos = null;
-        if (percorsoBarca.size() > 0)
-        {
-            pos = percorsoBarca.get(percorsoBarca.size() - 1);
-        }
-
-        putCurrentPositionMarker(pos, 0);
-
-    }
-
-    private void putCurrentPositionMarker(LatLng pos, float bearing)
-    {
-        if (pos != null)
-        {
-            if (currentBoatposition == null)
-            {
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.title(getString(R.string.current_position));
-                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
-                markerOptions.position(pos);
-                currentBoatposition = mMap.addMarker(markerOptions);
-            }
-            else
-            {
-                currentBoatposition.setPosition(pos);
-            }
-            currentBoatposition.setRotation(bearing);
+            restorePercorsoBarca(intent);
         }
     }
 
@@ -602,25 +553,81 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void startRace()
+    private void restorePercorsoBarca(Intent intent)
     {
-        mService.startRace(track);
-        mService.requestLocationUpdates();
-        currentBoa = 1;
-        boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        Parcelable[] locations = intent.getParcelableArrayExtra(LocationUpdatesService.INTENT_PERCORSO_BARCA);
+        currentBoa = intent.getIntExtra(LocationUpdatesService.INTENT_BOA_NUMBER, -1);
+
+        if (currentBoa > -1)
+        {
+            boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        }
+
+        percorsoBarca = new ArrayList<>();
+
+        if (actualPath == null)
+        {
+            actualPath = mMap.addPolyline(new PolylineOptions()
+                    .width(5)
+                    .color(Color.RED));
+        }
+
+        for (Parcelable location : locations)
+        {
+            percorsoBarca.add(new LatLng(((Location) location).getLatitude(), ((Location) location).getLongitude()));
+        }
+
+        actualPath.setPoints(percorsoBarca);
+        LatLng pos = null;
+        if (percorsoBarca.size() > 0)
+        {
+            pos = percorsoBarca.get(percorsoBarca.size() - 1);
+        }
+
+        putCurrentPositionMarker(pos, 0);
+
     }
 
-    private void setButtonsState(boolean requestingLocationUpdates)
+    private void putCurrentPositionMarker(LatLng pos, float bearing)
     {
-        if (requestingLocationUpdates)
+        if (pos != null)
         {
-            startRaceButton.setEnabled(false);
-            stopRaceButton.setEnabled(true);
+            if (currentBoatposition == null)
+            {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(getString(R.string.current_position));
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_boat_position));
+                markerOptions.position(pos);
+                currentBoatposition = mMap.addMarker(markerOptions);
+            }
+            else
+            {
+                currentBoatposition.setPosition(pos);
+            }
+            currentBoatposition.setRotation(bearing);
         }
-        else
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState != null && !savedInstanceState.isEmpty())
         {
-            startRaceButton.setEnabled(true);
-            stopRaceButton.setEnabled(false);
+            firstLoaded = savedInstanceState.getBoolean("first_load");
+            currentBoa = savedInstanceState.getInt("current_boa");
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s)
+    {
+        // Update the buttons state depending on whether location updates are being requested.
+        if (s.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES))
+        {
+            setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES,
+                    false));
         }
     }
 
@@ -639,13 +646,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         textLongitude.setText(coordinateFormat.format(longitude));
         TextView textDistance = findViewById(R.id.activity_maps_distance);
         textDistance.setText(distanceFormat.format(distance) + " m");
-    }
-
-    private void registerBroadcastReceiver()
-    {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_NEW_POSITION);
-        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_UPDATED_TRACK);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
     }
 }

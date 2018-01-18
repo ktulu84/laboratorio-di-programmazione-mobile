@@ -26,13 +26,10 @@ public class TableTrack
     static final String ID = "id";
     static final String TRACK_NAME = "track_name";
 
-    public static void create(SQLiteDatabase db)
+    public static void upgrade(SQLiteDatabase db)
     {
-        String sql = "CREATE TABLE " + TABLE_NAME + "(" +
-                ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TRACK_NAME + " TEXT" +
-                ")";
-        db.execSQL(sql);
+        drop(db);
+        create(db);
     }
 
     public static void drop(SQLiteDatabase db)
@@ -41,10 +38,13 @@ public class TableTrack
         db.execSQL(sql);
     }
 
-    public static void upgrade(SQLiteDatabase db)
+    public static void create(SQLiteDatabase db)
     {
-        drop(db);
-        create(db);
+        String sql = "CREATE TABLE " + TABLE_NAME + "(" +
+                ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                TRACK_NAME + " TEXT" +
+                ")";
+        db.execSQL(sql);
     }
 
     public static void save(SQLiteDatabase db, Track track)

@@ -73,13 +73,9 @@ public class LocationUpdatesService extends Service
 {
 
     private static final String PACKAGE_NAME = "it.univaq.ing.myshiprace.locationupdatesforegroundservice";
-
-    private static final String TAG = LocationUpdatesService.class.getSimpleName();
-
     // Actions privided by this service
     public static final String ACTION_SERVICE_GET_NEW_POSITION = PACKAGE_NAME + ".get_position";
     public static final String ACTION_SERVICE_GET_UPDATED_TRACK = PACKAGE_NAME + ".get_update";
-
     // Intent filters provided by this service
     public static final String INTENT_LOCATION = PACKAGE_NAME + ".location";
     public static final String INTENT_SPEED = PACKAGE_NAME + ".speed";
@@ -89,37 +85,32 @@ public class LocationUpdatesService extends Service
     public static final String INTENT_BOA_NUMBER = PACKAGE_NAME + ".boa_number";
     public static final String INTENT_PERCORSO_BARCA = PACKAGE_NAME + ".percorso_barca";
     public static final String INTENT_DISTANCE = PACKAGE_NAME + ".distance";
-
-    private static Race race = null;
-    private static Track track = null;
-    private static int currentBoa;
+    private static final String TAG = LocationUpdatesService.class.getSimpleName();
     /**
      * The name of the channel for notifications.
      */
     private static final String CHANNEL_ID = "channel_01";
-
-//    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-
-
-    private final IBinder mBinder = new LocalBinder();
-    private List<Location> percorsoBarca = new ArrayList<>();
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
-
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
      * than this value.
      */
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
     /**
      * The identifier for the notification displayed for the foreground service.
      */
     private static final int NOTIFICATION_ID = 12345678;
 
+    //    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
+    private static Race race = null;
+    private static Track track = null;
+    private static int currentBoa;
+    private final IBinder mBinder = new LocalBinder();
+    private List<Location> percorsoBarca = new ArrayList<>();
     /**
      * Used to check whether the bound activity has really gone away and not unbound as part of an
      * orientation change. We create a foreground service notification only if the former takes
@@ -150,12 +141,6 @@ public class LocationUpdatesService extends Service
      * The current location.
      */
     private Location mLocation;
-
-    public LocationUpdatesService()
-    {
-
-    }
-
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver()
     {
         @Override
@@ -165,6 +150,11 @@ public class LocationUpdatesService extends Service
             sendShipPositions();
         }
     };
+
+    public LocationUpdatesService()
+    {
+
+    }
 
     public void startRace(Track t)
     {
@@ -231,6 +221,12 @@ public class LocationUpdatesService extends Service
     }
 
     @Override
+    public void onDestroy()
+    {
+        mServiceHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
@@ -247,18 +243,6 @@ public class LocationUpdatesService extends Service
         stopForeground(true);
         mChangingConfiguration = false;
         return mBinder;
-    }
-
-    @Override
-    public void onRebind(Intent intent)
-    {
-        // Called when a client returns to the foreground
-        // and binds once again with this service. The service should cease to be a foreground
-        // service when that happens.
-        Log.i(TAG, "in onRebind()");
-        stopForeground(true);
-        mChangingConfiguration = false;
-        super.onRebind(intent);
     }
 
     @Override
@@ -279,51 +263,15 @@ public class LocationUpdatesService extends Service
     }
 
     @Override
-    public void onDestroy()
+    public void onRebind(Intent intent)
     {
-        mServiceHandler.removeCallbacksAndMessages(null);
-    }
-
-    /**
-     * Makes a request for location updates
-     */
-    public void requestLocationUpdates()
-    {
-        Log.i(TAG, "Requesting location updates");
-        Utils.setRequestingLocationUpdates(this, true);
-        startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
-
-        try
-        {
-            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                    mLocationCallback, Looper.myLooper());
-            registerReceiver(mNetworkReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
-        }
-        catch (SecurityException unlikely)
-        {
-            Utils.setRequestingLocationUpdates(this, false);
-            Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
-        }
-    }
-
-    /**
-     * Removes location updates.
-     */
-    public void removeLocationUpdates()
-    {
-        Log.i(TAG, "Removing location updates");
-        try
-        {
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-            Utils.setRequestingLocationUpdates(this, false);
-            unregisterReceiver(mNetworkReceiver);
-            stopSelf();
-        }
-        catch (SecurityException unlikely)
-        {
-            Utils.setRequestingLocationUpdates(this, true);
-            Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
-        }
+        // Called when a client returns to the foreground
+        // and binds once again with this service. The service should cease to be a foreground
+        // service when that happens.
+        Log.i(TAG, "in onRebind()");
+        stopForeground(true);
+        mChangingConfiguration = false;
+        super.onRebind(intent);
     }
 
     /**
@@ -383,6 +331,48 @@ public class LocationUpdatesService extends Service
 //        }
 
         return builder.build();
+    }
+
+    /**
+     * Removes location updates.
+     */
+    public void removeLocationUpdates()
+    {
+        Log.i(TAG, "Removing location updates");
+        try
+        {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+            Utils.setRequestingLocationUpdates(this, false);
+            unregisterReceiver(mNetworkReceiver);
+            stopSelf();
+        }
+        catch (SecurityException unlikely)
+        {
+            Utils.setRequestingLocationUpdates(this, true);
+            Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+        }
+    }
+
+    /**
+     * Makes a request for location updates
+     */
+    public void requestLocationUpdates()
+    {
+        Log.i(TAG, "Requesting location updates");
+        Utils.setRequestingLocationUpdates(this, true);
+        startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
+
+        try
+        {
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                    mLocationCallback, Looper.myLooper());
+            registerReceiver(mNetworkReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+        }
+        catch (SecurityException unlikely)
+        {
+            Utils.setRequestingLocationUpdates(this, false);
+            Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
+        }
     }
 
     private void getLastLocation()
@@ -484,17 +474,6 @@ public class LocationUpdatesService extends Service
     }
 
     /**
-     * Class used for the client Binder
-     */
-    public class LocalBinder extends Binder
-    {
-        public LocationUpdatesService getService()
-        {
-            return LocationUpdatesService.this;
-        }
-    }
-
-    /**
      * Returns true if this is a foreground service.
      */
     public boolean serviceIsRunningInForeground(Context context)
@@ -542,10 +521,6 @@ public class LocationUpdatesService extends Service
         }
     }
 
-    /*
-     * Used by MapsActivity to request updated track path data (after activity resuming)
-     */
-
     public boolean requestUpdate()
     {
         if (race != null)
@@ -560,6 +535,29 @@ public class LocationUpdatesService extends Service
         else
         {
             return false;
+        }
+    }
+
+    /*
+     * Used by MapsActivity to request updated track path data (after activity resuming)
+     */
+
+    private Boolean isNetworkAvailable()
+    {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    /**
+     * Class used for the client Binder
+     */
+    public class LocalBinder extends Binder
+    {
+        public LocationUpdatesService getService()
+        {
+            return LocationUpdatesService.this;
         }
     }
 
@@ -590,13 +588,5 @@ public class LocationUpdatesService extends Service
             }
             return null;
         }
-    }
-
-    private Boolean isNetworkAvailable()
-    {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
 }

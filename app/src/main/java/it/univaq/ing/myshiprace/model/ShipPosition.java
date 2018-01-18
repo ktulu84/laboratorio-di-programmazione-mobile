@@ -17,31 +17,10 @@ import java.text.SimpleDateFormat;
 public class ShipPosition extends Position implements Comparable<ShipPosition>
 {
 
+    private static DateFormat dateFormat = SimpleDateFormat.getDateTimeInstance();
     private Timestamp timestamp;
     private int raceID;
     private String shipName;
-
-    public String getShipName()
-    {
-        return shipName;
-    }
-
-    public void setShipName(String shipName)
-    {
-        this.shipName = shipName;
-    }
-
-    public int getRaceID()
-    {
-        return raceID;
-    }
-
-    public void setRaceID(int raceID)
-    {
-        this.raceID = raceID;
-    }
-
-    private static DateFormat dateFormat = SimpleDateFormat.getDateTimeInstance();
 
     public ShipPosition(JSONObject jsonObject)
     {
@@ -78,6 +57,39 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
         timestamp = time;
     }
 
+    public static ShipPosition parseJSON(JSONObject object)
+    {
+        try
+        {
+            ShipPosition shipPosition = new ShipPosition();
+            shipPosition.setLatitude(object.getDouble("latitude"));
+            shipPosition.setLongitude(object.getDouble("longitude"));
+            shipPosition.setTimestamp(new Timestamp(object.getLong("timestamp")));
+            shipPosition.setId(object.getInt("ID"));
+            shipPosition.setShipName(object.getString("ship_name"));
+            return shipPosition;
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj.getClass().equals(ShipPosition.class))
+        {
+            ShipPosition o2 = (ShipPosition) obj;
+            return super.equals(o2) && timestamp.equals(o2.getTimestamp()) && raceID == o2.getRaceID();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
@@ -92,24 +104,19 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
         return timestamp;
     }
 
+    public int getRaceID()
+    {
+        return raceID;
+    }
+
+    public void setRaceID(int raceID)
+    {
+        this.raceID = raceID;
+    }
+
     public void setTimestamp(Timestamp timestamp)
     {
         this.timestamp = timestamp;
-    }
-
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj.getClass().equals(ShipPosition.class))
-        {
-            ShipPosition o2 = (ShipPosition) obj;
-            return super.equals(o2) && timestamp.equals(o2.getTimestamp()) && raceID == o2.getRaceID();
-        }
-        else
-        {
-            return false;
-        }
     }
 
     public JSONObject toJSONObject()
@@ -131,23 +138,14 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
         return null;
     }
 
-    public static ShipPosition parseJSON(JSONObject object)
+    public String getShipName()
     {
-        try
-        {
-            ShipPosition shipPosition = new ShipPosition();
-            shipPosition.setLatitude(object.getDouble("latitude"));
-            shipPosition.setLongitude(object.getDouble("longitude"));
-            shipPosition.setTimestamp(new Timestamp(object.getLong("timestamp")));
-            shipPosition.setId(object.getInt("ID"));
-            shipPosition.setShipName(object.getString("ship_name"));
-            return shipPosition;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
+        return shipName;
+    }
+
+    public void setShipName(String shipName)
+    {
+        this.shipName = shipName;
     }
 
     @Override

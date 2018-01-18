@@ -28,6 +28,17 @@ public class TableRace
     static final String TRACK_ID = "track_id";
     static final String START_TIME = "start_time";
 
+    public static void upgrade(SQLiteDatabase db)
+    {
+        drop(db);
+        create(db);
+    }
+
+    public static void drop(SQLiteDatabase db)
+    {
+        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
+        db.execSQL(sql);
+    }
 
     public static void create(SQLiteDatabase db)
     {
@@ -37,18 +48,6 @@ public class TableRace
                 START_TIME + " NUMERIC" +
                 ")";
         db.execSQL(sql);
-    }
-
-    public static void drop(SQLiteDatabase db)
-    {
-        String sql = "DROP TABLE IF EXISTS " + TABLE_NAME;
-        db.execSQL(sql);
-    }
-
-    public static void upgrade(SQLiteDatabase db)
-    {
-        drop(db);
-        create(db);
     }
 
     public static void save(SQLiteDatabase db, Race race)

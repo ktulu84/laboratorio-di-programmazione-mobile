@@ -14,16 +14,6 @@ public class Boa extends Position implements Comparable<Boa>
     private int order;
     private int trackID;
 
-    public int getTrackID()
-    {
-        return trackID;
-    }
-
-    public void setTrackID(int trackID)
-    {
-        this.trackID = trackID;
-    }
-
     public Boa()
     {
         super();
@@ -58,6 +48,31 @@ public class Boa extends Position implements Comparable<Boa>
         this.order = order;
     }
 
+    public static Boa parseJSON(JSONObject object)
+    {
+        try
+        {
+            Boa b = new Boa();
+            b.setLatitude(object.getDouble("latitude"));
+            b.setLongitude(object.getDouble("longitude"));
+            b.setOrder(object.getInt("order"));
+            b.setId(object.getInt("ID"));
+            b.setTrackID(object.getInt("track_id"));
+            return b;
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public int compareTo(@NonNull Boa boa)
+    {
+        return this.getOrder() - boa.getOrder();
+    }
+
     public int getOrder()
     {
         return order;
@@ -66,12 +81,6 @@ public class Boa extends Position implements Comparable<Boa>
     public void setOrder(int order)
     {
         this.order = order;
-    }
-
-    @Override
-    public int compareTo(@NonNull Boa boa)
-    {
-        return this.getOrder() - boa.getOrder();
     }
 
     @Override
@@ -86,6 +95,16 @@ public class Boa extends Position implements Comparable<Boa>
         {
             return false;
         }
+    }
+
+    public int getTrackID()
+    {
+        return trackID;
+    }
+
+    public void setTrackID(int trackID)
+    {
+        this.trackID = trackID;
     }
 
     public String toString()
@@ -109,25 +128,6 @@ public class Boa extends Position implements Comparable<Boa>
             jsonObject.put("order", this.getOrder());
             jsonObject.put("track_id", this.getTrackID());
             return jsonObject;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static Boa parseJSON(JSONObject object)
-    {
-        try
-        {
-            Boa b = new Boa();
-            b.setLatitude(object.getDouble("latitude"));
-            b.setLongitude(object.getDouble("longitude"));
-            b.setOrder(object.getInt("order"));
-            b.setId(object.getInt("ID"));
-            b.setTrackID(object.getInt("track_id"));
-            return b;
         }
         catch (JSONException e)
         {
