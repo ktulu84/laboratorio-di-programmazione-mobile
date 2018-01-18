@@ -161,7 +161,6 @@ public class LocationUpdatesService extends Service
         race = new Race();
         race.setTrackID(t.getId());
         race.setStartTime(new Timestamp(System.currentTimeMillis()));
-        LocationUpdatesService.race = race;
         DBHelper.get(this).save(race);
         track = t;
         currentBoa = 1;
