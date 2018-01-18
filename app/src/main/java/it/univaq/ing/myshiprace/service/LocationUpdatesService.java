@@ -72,6 +72,16 @@ import it.univaq.ing.myshiprace.model.Track;
 public class LocationUpdatesService extends Service
 {
 
+    /**
+     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+     */
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
+    /**
+     * The fastest rate for active location updates. Updates will never be more frequent
+     * than this value.
+     */
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private static final String PACKAGE_NAME = "it.univaq.ing.myshiprace.locationupdatesforegroundservice";
     // Actions privided by this service
     public static final String ACTION_SERVICE_GET_NEW_POSITION = PACKAGE_NAME + ".get_position";
@@ -90,16 +100,6 @@ public class LocationUpdatesService extends Service
      * The name of the channel for notifications.
      */
     private static final String CHANNEL_ID = "channel_01";
-    /**
-     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
-    /**
-     * The fastest rate for active location updates. Updates will never be more frequent
-     * than this value.
-     */
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     /**
      * The identifier for the notification displayed for the foreground service.
      */

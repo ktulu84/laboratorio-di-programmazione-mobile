@@ -66,4 +66,6 @@
     <string name="pref_distance_title">Distance</string>
     <string name="important">IMPORTANT</string>
     <string name="set_a_ship_name">Set a ship name in settings (lateral menu)</string>
+    <string name="gps_enabled">GPS enabled</string>
+    <string name="gps_not_enabled">GPS is not enabled</string>
 </resources>

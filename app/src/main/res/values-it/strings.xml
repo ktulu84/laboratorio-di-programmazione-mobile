@@ -62,4 +62,6 @@
     <string name="pref_distance_title">Distanza</string>
     <string name="important">IMPORTANTE</string>
     <string name="set_a_ship_name">Imposta un nome per la tua barca nelle impostazioni (menu a lato)</string>
+    <string name="gps_enabled">GPS abilitato</string>
+    <string name="gps_not_enabled">GPS non abilitato</string>
 </resources>
