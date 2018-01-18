@@ -2,15 +2,19 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
+        android:defaultValue="http://ktulu.altervista.org"
         android:key="pref_key_server_address"
         android:summary="Indirizzo del server a cui inviare i dati"
-        android:title="Server"
-        android:defaultValue="http://ktulu.altervista.org"
+        android:title="Server" />
 
-        />
     <EditTextPreference
+        android:defaultValue="http://ktulu.altervista.org/track"
         android:key="pref_key_download_address"
         android:summary="Indirizzo del server da cui scaricare i dati"
-        android:title="Download server"
-        android:defaultValue="http://ktulu.altervista.org/track" />
+        android:title="Download server" />
+
+    <EditTextPreference
+        android:key="pref_key_ship_name"
+        android:summary="The name used to identify your ship"
+        android:title="Ship name" />
 </PreferenceScreen>

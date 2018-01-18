@@ -57,6 +57,16 @@ public class DBHelper extends SQLiteOpenHelper
         TableRace.create(db);
     }
 
+    public boolean setTransmitted(ShipPosition shipPosition)
+    {
+        return TableShipPosition.setTransmitted(getWritableDatabase(), shipPosition);
+    }
+
+    public List<ShipPosition> getUntrasmitted(int raceID)
+    {
+        return TableShipPosition.getUntrasmitted(getWritableDatabase(), raceID);
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {

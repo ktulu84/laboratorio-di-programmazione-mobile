@@ -45,4 +45,9 @@
     <string name="start_race">Avvia gara</string>
     <string name="stop_race">Ferma gara</string>
     <string name="distance">Distanza</string>
+    <string name="current_position">Posizione attuale</string>
+    <string name="approaching_boa">Ci stiamo avvicinando alla boa</string>
+    <string name="approaching_finish">Ci stiamo avvicinando al traguardo</string>
+    <string name="next_buoy">"Prossima boa: boa "</string>
+    <string name="next_buoy_finish">Prossima boa: arrivo</string>
 </resources>

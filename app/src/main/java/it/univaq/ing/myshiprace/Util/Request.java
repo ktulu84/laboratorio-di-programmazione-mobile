@@ -91,13 +91,11 @@ public class Request
         catch (IOException e)
         {
             e.printStackTrace();
-            return null;
+            return "ERROR";
         }
         finally
         {
             if (connection != null) connection.disconnect();
         }
     }
-
-
 }

@@ -17,8 +17,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.univaq.ing.myshiprace.MapsActivity;
-
 /**
  * Created by ktulu on 15/01/18.
  */
@@ -71,7 +69,7 @@ public class MyLocationService extends Service
             float bearing = locationOld.bearingTo(location);
             locationOld = location;
 
-            Intent intent = new Intent(MapsActivity.ACTION_SERVICE_GET_POSITION);
+            Intent intent = new Intent(ACTION_GET_POSITION);
             intent.putExtra("longitude", location.getLongitude());
             intent.putExtra("latitude", location.getLatitude());
             intent.putExtra("speed", speed);

@@ -42,6 +42,7 @@ public class FragmentList extends Fragment
 {
     //    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
     public static final String ACTION_SERVICE_DB_GET_ALL_TRACKS = "action_service_db_get_all_tracks";
+    public static final String INTENT_TRACK_OBJECT = "intent_track_object";
     private Context context;
     private List<Track> tracks;
     private RecyclerView list;
@@ -130,7 +131,7 @@ public class FragmentList extends Fragment
             {
                 Intent intent = new Intent(view.getContext(), TrackActivity.class);
                 Track rt = tracks.get(position);
-                intent.putExtra("track_object", rt.toJSONArray().toString());
+                intent.putExtra(INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
                 view.getContext().startActivity(intent);
             }
 
@@ -162,7 +163,7 @@ public class FragmentList extends Fragment
                 Track rt = new Track(input.getText().toString());
                 DBHelper.get(context).saveOrUpdate(rt);
                 tracks.add(rt);
-                intent.putExtra("track_object", rt.toJSONArray().toString());
+                intent.putExtra(INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
                 context.startActivity(intent);
             }
         });
@@ -292,7 +293,7 @@ public class FragmentList extends Fragment
             {
                 Track rt = Track.parseJSON(req);
 
-                Log.e("risultatoooo", rt.toJSONArray().toString());
+                Log.d("risultato", rt.toJSONArray().toString());
                 return rt;
             }
             else
@@ -310,7 +311,7 @@ public class FragmentList extends Fragment
                 DBHelper.get(context).saveOrUpdate(track);
                 tracks.add(track);
                 Intent intent = new Intent(context, TrackActivity.class);
-                intent.putExtra("track_object", track.toJSONArray().toString());
+                intent.putExtra(INTENT_TRACK_OBJECT, track.toJSONArray().toString());
                 context.startActivity(intent);
             }
             else

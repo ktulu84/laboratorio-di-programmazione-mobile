@@ -22,10 +22,15 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -50,11 +55,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.univaq.ing.myshiprace.Database.DBHelper;
+import it.univaq.ing.myshiprace.FragmentList;
 import it.univaq.ing.myshiprace.MapsActivity;
 import it.univaq.ing.myshiprace.R;
+import it.univaq.ing.myshiprace.Util.Preferences;
+import it.univaq.ing.myshiprace.Util.Request;
 import it.univaq.ing.myshiprace.Util.Utils;
 import it.univaq.ing.myshiprace.model.Race;
 import it.univaq.ing.myshiprace.model.ShipPosition;
+import it.univaq.ing.myshiprace.model.Track;
 
 /**
  * A bound and started service that is promoted to a foreground service when location updates have
@@ -73,29 +82,38 @@ import it.univaq.ing.myshiprace.model.ShipPosition;
 public class LocationUpdatesService extends Service
 {
 
-    private static final String PACKAGE_NAME =
-            "it.univaq.ing.myshiprace.locationupdatesforegroundservice";
+    private static final String PACKAGE_NAME = "it.univaq.ing.myshiprace.locationupdatesforegroundservice";
 
     private static final String TAG = LocationUpdatesService.class.getSimpleName();
+    public static final String ACTION_SERVICE_GET_NEW_POSITION = PACKAGE_NAME + ".get_position";
+    public static final String ACTION_SERVICE_GET_UPDATED_TRACK = PACKAGE_NAME + ".get_update";
 
-    public static Race race = null;
+    public static final String INTENT_LOCATION = PACKAGE_NAME + ".location";
+    public static final String INTENT_SPEED = PACKAGE_NAME + ".speed";
+    public static final String INTENT_BEARING = PACKAGE_NAME + ".bearing";
+    public static final String INTENT_STARTED_FROM_NOTIFICATION = PACKAGE_NAME + ".started_from_notification";
+    public static final String INTENT_NEAR_BOA = PACKAGE_NAME + ".near_boa";
+    public static final String INTENT_BOA_NUMBER = PACKAGE_NAME + ".boa_number";
+    public static final String INTENT_PERCORSO_BARCA = PACKAGE_NAME + ".percorso_barca";
+    public static final String INTENT_DISTANCE = PACKAGE_NAME + ".distance";
+
+    private static Race race = null;
+    private static Track track = null;
+    private static int currentBoa;
     /**
      * The name of the channel for notifications.
      */
     private static final String CHANNEL_ID = "channel_01";
 
-    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
+//    public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
 
-    public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
-    public static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
-            ".started_from_notification";
 
     private final IBinder mBinder = new LocalBinder();
     private List<Location> percorsoBarca = new ArrayList<>();
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
@@ -142,6 +160,29 @@ public class LocationUpdatesService extends Service
 
     public LocationUpdatesService()
     {
+
+    }
+
+    private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Log.d("RECEIVER", "ho ricevuto qualcosa: " + intent.getAction());
+            sendShipPositions();
+        }
+    };
+
+    public void startRace(Track t)
+    {
+        race = new Race();
+        race.setTrackID(t.getId());
+        race.setStartTime(new Timestamp(System.currentTimeMillis()));
+        LocationUpdatesService.race = race;
+        DBHelper.get(this).save(race);
+        track = t;
+        currentBoa = 1;
+//        return race;
     }
 
     @Override
@@ -184,7 +225,7 @@ public class LocationUpdatesService extends Service
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         Log.i(TAG, "Service started");
-        boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
+        boolean startedFromNotification = intent.getBooleanExtra(INTENT_STARTED_FROM_NOTIFICATION,
                 false);
 
         // We got here because the user decided to remove location updates from the notification.
@@ -260,10 +301,12 @@ public class LocationUpdatesService extends Service
         Log.i(TAG, "Requesting location updates");
         Utils.setRequestingLocationUpdates(this, true);
         startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
+
         try
         {
             mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                     mLocationCallback, Looper.myLooper());
+            registerReceiver(mNetworkReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
         }
         catch (SecurityException unlikely)
         {
@@ -283,6 +326,7 @@ public class LocationUpdatesService extends Service
         {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             Utils.setRequestingLocationUpdates(this, false);
+            unregisterReceiver(mNetworkReceiver);
             stopSelf();
         }
         catch (SecurityException unlikely)
@@ -300,9 +344,15 @@ public class LocationUpdatesService extends Service
         Intent intent = new Intent(this, LocationUpdatesService.class);
 
         CharSequence text = Utils.getLocationText(mLocation, this);
+        StringBuilder bigText = new StringBuilder();
+        bigText.append(Utils.getLocationText(mLocation, this)).append(System.getProperty("line.separator"));
+        if (currentBoa < track.length() - 1)
+            bigText.append(getString(R.string.next_buoy) + currentBoa);
+        else
+            bigText.append(getString(R.string.next_buoy_finish));
 
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
-        intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
+        intent.putExtra(INTENT_STARTED_FROM_NOTIFICATION, true);
 
         // The PendingIntent that leads to a call to onStartCommand() in this service.
         PendingIntent servicePendingIntent = PendingIntent.getService(this, 0, intent,
@@ -310,9 +360,10 @@ public class LocationUpdatesService extends Service
 
         // The PendingIntent to launch activity.
         Intent activityIntent = new Intent(this, MapsActivity.class);
-        activityIntent.putExtra("percorso_barca", percorsoBarca.toArray(new Location[]{}));
-        activityIntent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
-        activityIntent.putExtra("track_object", DBHelper.get(this).getRaceTrack(race.getTrackID()).toJSONArray().toString());
+        activityIntent.putExtra(INTENT_PERCORSO_BARCA, percorsoBarca.toArray(new Location[]{}));
+        activityIntent.putExtra(INTENT_BOA_NUMBER, currentBoa);
+        activityIntent.putExtra(INTENT_STARTED_FROM_NOTIFICATION, true);
+        activityIntent.putExtra(FragmentList.INTENT_TRACK_OBJECT, DBHelper.get(this).getRaceTrack(race.getTrackID()).toJSONArray().toString());
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -327,7 +378,8 @@ public class LocationUpdatesService extends Service
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.ic_notification_icon_2)
                 .setTicker(text)
-                .setWhen(System.currentTimeMillis());
+                .setWhen(System.currentTimeMillis())
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(bigText.toString()));
 //
 //        // Set the Channel ID for Android O.
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -351,7 +403,8 @@ public class LocationUpdatesService extends Service
                             if (task.isSuccessful() && task.getResult() != null)
                             {
                                 mLocation = task.getResult();
-                                saveShipPosition(mLocation);
+                                if (race != null)
+                                    saveShipPosition(mLocation);
                             }
                             else
                             {
@@ -368,44 +421,60 @@ public class LocationUpdatesService extends Service
 
     private void onNewLocation(Location location)
     {
-        Log.i(TAG, "New location: " + location);
-
-        if (mLocation == null)
+        if (Utils.requestingLocationUpdates(this))
         {
+            Log.i(TAG, "New location: " + location);
+
+            if (mLocation == null)
+            {
+                mLocation = location;
+            }
+            float speed;
+            if (location.hasSpeed())
+            {
+                speed = location.getSpeed();
+            }
+            else
+            {
+                speed = location.distanceTo(mLocation) / (location.getTime() - mLocation.getTime());
+                //time is in milliseconds
+                speed *= 1000;
+            }
+            float bearing = mLocation.bearingTo(location);
+            if (bearing < 0)
+                bearing += 180;
+            bearing -= 90;
             mLocation = location;
-        }
+            // Notify anyone listening for broadcasts about the new location.
+            Intent intent = new Intent(ACTION_SERVICE_GET_NEW_POSITION);
+            intent.putExtra(INTENT_LOCATION, location);
+            intent.putExtra(INTENT_SPEED, speed);
+//            Log.e("SPEED", String.valueOf(speed));
+            intent.putExtra(INTENT_BEARING, bearing);
+            Location boalocation = new Location("");
+            boalocation.setLatitude(track.getBoa(currentBoa).getLatitude());
+            boalocation.setLongitude(track.getBoa(currentBoa).getLongitude());
+            float distance = location.distanceTo(boalocation);
+            intent.putExtra(INTENT_DISTANCE, distance);
+            if (distance < 20.0)
+            {
+                intent.putExtra(INTENT_NEAR_BOA, true);
+                intent.putExtra(INTENT_BOA_NUMBER, currentBoa);
+                if (currentBoa < track.length() - 1)
+                {
+                    ++currentBoa;
+                }
+            }
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
-        float speed;
-        if (location.hasSpeed())
-        {
-            speed = location.getSpeed();
+            // Update notification content if running as a foreground service.
+            if (serviceIsRunningInForeground(this))
+            {
+                mNotificationManager.notify(NOTIFICATION_ID, getNotification());
+            }
+            saveShipPosition(location);
+            percorsoBarca.add(location);
         }
-        else
-        {
-            speed = location.distanceTo(mLocation) / (location.getTime() - mLocation.getTime());
-            //time is in milliseconds
-            speed *= 1000;
-        }
-        float bearing = mLocation.bearingTo(location);
-        if (bearing < 0)
-            bearing += 180;
-        bearing -= 90;
-        mLocation = location;
-        // Notify anyone listening for broadcasts about the new location.
-        Intent intent = new Intent(MapsActivity.ACTION_SERVICE_GET_POSITION);
-        intent.putExtra(EXTRA_LOCATION, location);
-        intent.putExtra("speed", speed);
-        Log.e("SPEEEEEEEEEEEEED", String.valueOf(speed));
-        intent.putExtra("bearing", bearing);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-
-        // Update notification content if running as a foreground service.
-        if (serviceIsRunningInForeground(this))
-        {
-            mNotificationManager.notify(NOTIFICATION_ID, getNotification());
-        }
-        saveShipPosition(location);
-        percorsoBarca.add(location);
     }
 
     /**
@@ -461,6 +530,89 @@ public class LocationUpdatesService extends Service
         s.setLatitude(location.getLatitude());
         s.setLongitude(location.getLongitude());
         s.setRaceID(race.getId());
+        s.setShipName(Preferences.load(this, "pref_key_ship_name", ""));
         DBHelper.get(this).save(s);
+        sendShipPositions();
     }
+
+    public void sendShipPositions()
+    {
+        if (isNetworkAvailable())
+        {
+            ShipPosition[] ships = DBHelper.get(this).getUntrasmitted(race.getId()).toArray(new ShipPosition[]{});
+            new MyTask().execute(ships);
+        }
+    }
+
+    public boolean requestUpdate()
+    {
+        if (race != null)
+        {
+            Intent intent = new Intent(ACTION_SERVICE_GET_UPDATED_TRACK);
+            intent.putExtra(INTENT_PERCORSO_BARCA, percorsoBarca.toArray(new Location[]{}));
+            intent.putExtra(INTENT_BOA_NUMBER, currentBoa);
+//            intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, DBHelper.get(this).getRaceTrack(race.getTrackID()).toJSONArray().toString());
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+            return true;
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private class MyTask extends AsyncTask<ShipPosition, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(ShipPosition... shipPositions)
+        {
+            boolean result = true;
+            for (ShipPosition s : shipPositions)
+            {
+                String response = Request.doRequest(Preferences.load(getApplicationContext(), "pref_key_server_address", "http://ktulu.altervista.org"), new String[]{"PIPPO"}, new String[]{s.toJSONObject().toString()});
+                result = result && response.equalsIgnoreCase("ok");
+                if (result)
+                {
+                    Log.i(TAG, "INVIATO ID " + s.getId());
+                    DBHelper.get(getApplicationContext()).setTransmitted(s);
+
+                }
+                else
+                {
+                    Log.e(TAG, "NON INVIATO ID " + s.getId());
+                    break;
+                }
+            }
+            return null;
+        }
+    }
+
+    private Boolean isNetworkAvailable()
+    {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+//    private boolean isOnline()
+//    {
+//        Runtime runtime = Runtime.getRuntime();
+//        try
+//        {
+//            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+//            int exitValue = ipProcess.waitFor();
+//            return (exitValue == 0);
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//        catch (InterruptedException e)
+//        {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
 }

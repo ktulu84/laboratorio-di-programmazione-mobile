@@ -19,6 +19,17 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
 
     private Timestamp timestamp;
     private int raceID;
+    private String shipName;
+
+    public String getShipName()
+    {
+        return shipName;
+    }
+
+    public void setShipName(String shipName)
+    {
+        this.shipName = shipName;
+    }
 
     public int getRaceID()
     {
@@ -40,6 +51,7 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
             latitude = jsonObject.getDouble("latitude");
             longitude = jsonObject.getDouble("longitude");
             timestamp = new Timestamp(jsonObject.getLong("timestamp"));
+            shipName = jsonObject.getString("ship_name");
             id = jsonObject.getInt("ID");
         }
         catch (JSONException e)
@@ -109,6 +121,7 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
             jsonObject.put("latitude", this.getLatitude());
             jsonObject.put("longitude", this.getLongitude());
             jsonObject.put("timestamp", this.getTimestamp().getTime());
+            jsonObject.put("ship_name", this.getShipName());
             return jsonObject;
         }
         catch (JSONException e)
@@ -127,6 +140,7 @@ public class ShipPosition extends Position implements Comparable<ShipPosition>
             shipPosition.setLongitude(object.getDouble("longitude"));
             shipPosition.setTimestamp(new Timestamp(object.getLong("timestamp")));
             shipPosition.setId(object.getInt("ID"));
+            shipPosition.setShipName(object.getString("ship_name"));
             return shipPosition;
         }
         catch (JSONException e)

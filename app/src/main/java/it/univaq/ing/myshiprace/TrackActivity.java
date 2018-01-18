@@ -36,12 +36,12 @@ public class TrackActivity extends AppCompatActivity
 
         if (savedInstanceState != null)
         {
-            trackJSON = savedInstanceState.getString("track_object");
+            trackJSON = savedInstanceState.getString(FragmentList.INTENT_TRACK_OBJECT);
         }
         else
         {
             Intent intent = getIntent();
-            trackJSON = intent.getStringExtra("track_object");
+            trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
         }
 
         if (trackJSON != null)
@@ -93,7 +93,7 @@ public class TrackActivity extends AppCompatActivity
                 public void onClick(View view)
                 {
                     Intent intent = new Intent(view.getContext(), MapsActivity.class);
-                    intent.putExtra("track_object", rt.toJSONArray().toString());
+                    intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
                     view.getContext().startActivity(intent);
 //                    Toast.makeText(view.getContext(), "maronn", Toast.LENGTH_SHORT).show();
                 }
@@ -160,7 +160,7 @@ public class TrackActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        outState.putString("track_object", rt.toJSONArray().toString());
+        outState.putString(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
     }
 
     private void showDialog()
@@ -197,7 +197,7 @@ public class TrackActivity extends AppCompatActivity
 //                Track rt = new Track(input.getText().toString());
 //                DBHelper.get(context).saveOrUpdate(rt);
 //                tracks.add(rt);
-//                intent.putExtra("track_object", rt.toJSONArray().toString());
+//                intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
 //                context.startActivity(intent);
             }
         });
