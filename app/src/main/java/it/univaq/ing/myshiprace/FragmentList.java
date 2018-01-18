@@ -2,7 +2,6 @@ package it.univaq.ing.myshiprace;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -274,34 +273,8 @@ public class FragmentList extends Fragment
         adb.show();
     }
 
-
-//    private class MyTask extends AsyncTask<Void, Void, Void>
-//    {
-//        ProgressDialog dialog;
-//
-//
-//        @Override
-//        protected Void doInBackground(Void... voids)
-//        {
-//            String req = "";
-//            try
-//            {
-//                req = Request.doRequest("http://192.168.1.6:8080/prova", new String[]{"PIPPO"}, new String[]{new JSONObject("{\"a\":1}").toString()});
-//            }
-//            catch (JSONException e)
-//            {
-//                e.printStackTrace();
-//            }
-//
-//            Log.e("risultatoooo", req);
-//            return null;
-//        }
-//    }
-
     private class MyTask extends AsyncTask<String, Void, Track>
     {
-        ProgressDialog dialog;
-
         @Override
         protected Track doInBackground(String... strings)
         {
