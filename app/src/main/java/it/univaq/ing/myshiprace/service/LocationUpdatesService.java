@@ -171,6 +171,7 @@ public class LocationUpdatesService extends Service
         race = null;
         track = null;
         currentBoa = -1;
+        percorsoBarca.clear();
     }
 
     @Override
