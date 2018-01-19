@@ -210,6 +210,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                     }
                     boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+                    // restore last position informations (we can survive without speed informations until next update)
+                    if (isConfigurationChanged && percorsoBarca != null && percorsoBarca.size() > 0)
+                    {
+                        isConfigurationChanged = false;
+                        LatLng pos = percorsoBarca.get(percorsoBarca.size() - 1);
+                        Location p = new Location("");
+                        Location b = new Location("");
+                        b.setLatitude(boaMarkers.get(currentBoa).getPosition().latitude);
+                        b.setLongitude(boaMarkers.get(currentBoa).getPosition().longitude);
+                        p.setLatitude(pos.latitude);
+                        p.setLongitude(pos.longitude);
+                        setTextView(pos.latitude, pos.longitude, 0, p.distanceTo(b));
+                    }
                     break;
 
                 /*
@@ -239,7 +253,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (isConfigurationChanged)
             {
                 mService.requestUpdate();
-                isConfigurationChanged = false;
             }
             mBound = true;
         }
