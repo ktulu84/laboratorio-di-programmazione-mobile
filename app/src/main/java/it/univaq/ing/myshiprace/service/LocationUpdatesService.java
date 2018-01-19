@@ -329,12 +329,6 @@ public class LocationUpdatesService extends Service
                 .setTicker(text)
                 .setWhen(System.currentTimeMillis())
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigText.toString()));
-//
-//        // Set the Channel ID for Android O.
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-//        {
-//            builder.setChannelId(CHANNEL_ID); // Channel ID
-//        }
 
         return builder.build();
     }
@@ -527,6 +521,9 @@ public class LocationUpdatesService extends Service
         }
     }
 
+    /*
+     * Used by MapsActivity to request updated track path data (after activity resuming)
+     */
     public boolean requestUpdate()
     {
         if (race != null)
@@ -544,9 +541,7 @@ public class LocationUpdatesService extends Service
         }
     }
 
-    /*
-     * Used by MapsActivity to request updated track path data (after activity resuming)
-     */
+
 
     private Boolean isNetworkAvailable()
     {
@@ -584,12 +579,11 @@ public class LocationUpdatesService extends Service
             for (ShipPosition s : shipPositions)
             {
                 String response = Request.doRequest(Preferences.load(getApplicationContext(), "pref_key_server_address", "http://ktulu.altervista.org"), new String[]{"PIPPO"}, new String[]{s.toJSONObject().toString()});
-                result = result && response.equalsIgnoreCase("ok");
+                result = response != null && response.equalsIgnoreCase("ok");
                 if (result)
                 {
                     Log.i(TAG, "INVIATO ID " + s.getId());
                     DBHelper.get(getApplicationContext()).setTransmitted(s);
-
                 }
                 else
                 {
