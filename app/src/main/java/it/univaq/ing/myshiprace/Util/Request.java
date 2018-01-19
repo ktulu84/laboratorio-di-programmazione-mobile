@@ -17,11 +17,15 @@ import java.net.URL;
  * <p>
  * BiTE s.r.l.
  * contact info@bitesrl.it
+ *
+ * Whit some modifications by ktulu (me) to use parameters
  */
 
 public class Request
 {
 
+    // method to handle requests. if parameters and values are null or contains nothing
+    // just connect and get a result, otherwise send a POST request to the page and get the result
     public static String doRequest(String address, String[] parameters, String[] values)
     {
 

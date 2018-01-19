@@ -21,6 +21,9 @@ import it.univaq.ing.myshiprace.model.Track;
  * contact info@bitesrl.it
  */
 
+/*
+ * Class implementing intent service interacting with our DB
+ */
 public class MyService extends IntentService
 {
 
@@ -83,6 +86,9 @@ public class MyService extends IntentService
         DBHelper.get(getApplicationContext()).saveOrUpdate(boa);
     }
 
+    /*
+     * These methods are not actually used
+     */
     private void saveOrUpdateInDB(ShipPosition shipPosition)
     {
         DBHelper.get(getApplicationContext()).saveOrUpdate(shipPosition);

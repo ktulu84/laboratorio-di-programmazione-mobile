@@ -21,6 +21,10 @@ import android.widget.Toast;
 
 import it.univaq.ing.myshiprace.Util.Utils;
 
+
+/*
+ * Just the main activity, it contains navigation drawer and can load fragments
+ */
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
@@ -29,7 +33,10 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        //reset button status on MapsActivity
         Utils.setRequestingLocationUpdates(this, false);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -43,12 +50,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        //get default fragment
         if (savedInstanceState == null)
         {
             getFragmentManager().beginTransaction().add(R.id.main_container, new FragmentList()).commit();
             navigationView.setCheckedItem(R.id.nav_lista);
         }
 
+        //check for permissions
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -58,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
+        //if the drawer is opened on back press we close it, otherwise... we consume onBackPressed() event
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START))
         {
@@ -84,6 +94,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 else
                 {
+                    //if permission is not granted we show an alert and close the application
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle(R.string.important);
 

@@ -4,6 +4,7 @@ import android.view.View;
 
 /**
  * Created by ktulu on 10/01/18.
+ * interface for RecyclerTouchListener
  */
 
 public interface ClickListener

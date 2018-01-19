@@ -43,6 +43,7 @@ public class Preferences
         return pref.getString(key, fallback);
     }
 
+    // int this case float value is taken from editTextPreference
     public static float load(Context context, String key, float fallback)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);

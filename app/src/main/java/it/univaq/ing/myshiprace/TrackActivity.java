@@ -29,6 +29,9 @@ import it.univaq.ing.myshiprace.adapter.BoaAdapter;
 import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
 
+/*
+ * This activity show us buoy list in a track.
+ */
 public class TrackActivity extends AppCompatActivity
 {
     private Track rt;
@@ -39,6 +42,8 @@ public class TrackActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
+
+        // take the relevant track data from json (intent or savedInstanceState)
         String trackJSON;
 
         if (savedInstanceState != null)
@@ -55,6 +60,8 @@ public class TrackActivity extends AppCompatActivity
         {
             rt = Track.parseJSON(trackJSON);
         }
+
+        //show buoys contained in a track
         if (rt != null)
         {
             String trackName = rt.getTrackName();
@@ -67,6 +74,7 @@ public class TrackActivity extends AppCompatActivity
             list.setLayoutManager(new LinearLayoutManager(this));
             list.setAdapter(new BoaAdapter(rt.getBoas()));
 
+            //on long press prompt for buoy deletion
             list.addOnItemTouchListener(new RecyclerTouchListener(this,
                     list, new ClickListener()
             {
@@ -83,6 +91,7 @@ public class TrackActivity extends AppCompatActivity
                 }
             }));
 
+            //this button let us add a buoy on the track (only if the track is loaded, if we got here without a valid track it would be a mess)
             FloatingActionButton fabNewBoa = findViewById(R.id.activity_new_track_fab);
             fabNewBoa.setOnClickListener(new View.OnClickListener()
             {
@@ -93,12 +102,14 @@ public class TrackActivity extends AppCompatActivity
                 }
             });
 
+            // floating action button to "play" the track
             FloatingActionButton fabPlay = findViewById(R.id.activity_play_track_fab);
             fabPlay.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
+                    // if he want to play with us we need location permissions
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
                     {
                         ActivityCompat.requestPermissions(TrackActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -109,10 +120,10 @@ public class TrackActivity extends AppCompatActivity
                         intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
                         view.getContext().startActivity(intent);
                     }
-//                    Toast.makeText(view.getContext(), "maronn", Toast.LENGTH_SHORT).show();
                 }
             });
 
+            //if track don't contain a buoy, we don't want to play it, do we?
             if (rt.length() <= 0)
             {
                 fabPlay.setVisibility(View.INVISIBLE);
@@ -122,6 +133,8 @@ public class TrackActivity extends AppCompatActivity
 
     }
 
+    // buoy deletion, as for track show a snackbar for restore it. if this is the last buoy hide
+    // floating action butto to play the track
     private void deleteBoa(final View v, final int position)
     {
         AlertDialog.Builder adb = new AlertDialog.Builder(v.getContext());
@@ -163,13 +176,14 @@ public class TrackActivity extends AppCompatActivity
         {
             public void onClick(DialogInterface dialog, int which)
             {
-
+                dialog.cancel();
             }
         });
 
         adb.show();
     }
 
+    //prompt for add a new buoy
     private void showDialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -200,12 +214,6 @@ public class TrackActivity extends AppCompatActivity
                     FloatingActionButton fab = findViewById(R.id.activity_play_track_fab);
                     fab.setVisibility(View.VISIBLE);
                 }
-//                Intent intent = new Intent(context, TrackActivity.class);
-//                Track rt = new Track(input.getText().toString());
-//                DBHelper.get(context).saveOrUpdate(rt);
-//                tracks.add(rt);
-//                intent.putExtra(FragmentList.INTENT_TRACK_OBJECT, rt.toJSONArray().toString());
-//                context.startActivity(intent);
             }
         });
 
@@ -229,6 +237,7 @@ public class TrackActivity extends AppCompatActivity
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
+        //as ever, if the user deny permission we don't let him play with us because he is mean to us
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length <= 0
                 || grantResults[0] != PackageManager.PERMISSION_GRANTED)

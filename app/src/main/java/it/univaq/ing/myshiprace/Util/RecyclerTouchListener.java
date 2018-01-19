@@ -8,6 +8,7 @@ import android.view.View;
 
 /**
  * Created by ktulu on 10/01/18.
+ * Listener to intercept touch events on recyclerView. needed for long press
  */
 
 public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener

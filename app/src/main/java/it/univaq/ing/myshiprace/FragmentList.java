@@ -37,6 +37,7 @@ import it.univaq.ing.myshiprace.service.MyService;
 
 /**
  * Created by ktulu on 15/12/17.
+ * This fragment contains list of tracks. It can create new tracks or download one from the internet
  */
 
 public class FragmentList extends Fragment
@@ -75,8 +76,10 @@ public class FragmentList extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
-//        new MyTask().execute();
 
+        /*
+         * If it is the first loading of the app show a dialog suggesting to add your ship name
+         */
         if (Preferences.load(container.getContext(), "first_time", true))
         {
             Preferences.save(container.getContext(), "first_time", false);
@@ -94,6 +97,8 @@ public class FragmentList extends Fragment
 
         View view = inflater.inflate(R.layout.activity_lista, container, false);
         context = view.getContext();
+
+        // Floating action button to add a new track manually
         FloatingActionButton fabAdd = view.findViewById(R.id.activity_lista_fab);
         fabAdd.setOnClickListener(new View.OnClickListener()
         {
@@ -104,6 +109,7 @@ public class FragmentList extends Fragment
             }
         });
 
+        //Floating action button to download a new track from the internet
         FloatingActionButton fabDownload = view.findViewById(R.id.activity_download_track_fab);
         fabDownload.setOnClickListener(new View.OnClickListener()
         {
@@ -114,10 +120,15 @@ public class FragmentList extends Fragment
             }
         });
 
+
         list = view.findViewById(R.id.track_list);
         list.setLayoutManager(new LinearLayoutManager(view.getContext()));
         list.setAdapter(new TrackAdapter());
 
+        /*
+          * Touch listener on list recycler view elements. on click it opens the track in a new activity
+          * on long press it show a dialog asking for track removal
+          */
         list.addOnItemTouchListener(new RecyclerTouchListener(context,
                 list, new ClickListener()
         {
@@ -145,11 +156,12 @@ public class FragmentList extends Fragment
     {
         super.onResume();
 
+        //registering the receiver
         IntentFilter filter = new IntentFilter(ACTION_SERVICE_DB_GET_ALL_TRACKS);
-//        filter.addAction(ACTION_SERVICE_DB_GET_ALL_TRACKS);
         Context c = getActivity().getApplicationContext();
         LocalBroadcastManager.getInstance(c).registerReceiver(receiver, filter);
 
+        // on resume we reload tracks from DB (we may be coming from the track creation screen)
         Intent newIntent = new Intent(c, MyService.class);
         newIntent.setAction(MyService.ACTION_GETALL_TRACKS);
         getActivity().startService(newIntent);
@@ -198,13 +210,15 @@ public class FragmentList extends Fragment
 
     private void showDownload()
     {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Server da cui scaricare il tracciato");
+        builder.setTitle(R.string.dialog_download_server);
 
         final EditText input = new EditText(context);
         input.setText(Preferences.load(context, "pref_key_download_address", "http://ktulu.altervista.org/track"));
         builder.setView(input);
 
+        //if ok try to download the track
         builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
         {
             @Override
@@ -213,8 +227,6 @@ public class FragmentList extends Fragment
                 Intent intent = new Intent(context, TrackActivity.class);
                 MyTask task = new MyTask();
                 task.execute(input.getText().toString());
-
-
             }
         });
 
@@ -245,12 +257,15 @@ public class FragmentList extends Fragment
 
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, tracks.size());
+
+                //show a snackbar if we delete the track by mistake and we want to restore it
                 Snackbar.make(v, R.string.track_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
                 {
 
                     @Override
                     public void onClick(View view)
                     {
+                        //show an informative snackbar pointing out we have just restored a track
                         Snackbar snackbar1 = Snackbar.make(view, R.string.undo_track_delete, Snackbar.LENGTH_LONG);
                         snackbar1.show();
                         tracks.add(position, temp);
@@ -296,6 +311,7 @@ public class FragmentList extends Fragment
         @Override
         protected void onPostExecute(Track track)
         {
+            //if the track is successfully downloaded add to the db, if not show an alert
             if (track != null)
             {
                 super.onPostExecute(track);

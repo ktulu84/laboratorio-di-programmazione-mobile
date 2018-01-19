@@ -65,29 +65,71 @@ import it.univaq.ing.myshiprace.model.Boa;
 import it.univaq.ing.myshiprace.model.Track;
 import it.univaq.ing.myshiprace.service.LocationUpdatesService;
 
+/*
+ * This activity is just a little more complex than others... it tracks ship movements on the map
+ * while showing track to follow and buoys
+ */
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, SharedPreferences.OnSharedPreferenceChangeListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<LocationSettingsResult>
 {
+    //used to show dialog prompting for user to enable GPS
     protected GoogleApiClient mGoogleApiClient;
-    protected LocationRequest locationRequest;
-    GoogleMap mMap;
-    List<LatLng> percorsoGara;
-    List<LatLng> percorsoBarca;
-    boolean firstLoaded = true;
-    int REQUEST_CHECK_SETTINGS = 100;
-    private Track track;
-    private Marker currentBoatposition;
-    private Polyline actualPath;
-    private boolean isRegistered = false;
+
+    // sometimes we intercept LocationManager.PROVIDERS_CHANGED_ACTION two times (maybe because of GPS and network location change)
+    // this flag help us showing only one dialog instead of two (and avoid inconsistent behaviour)
     private boolean isShow = false;
+
+    //used as request number to show to show dialog prompting for user to enable GPS
+    int REQUEST_CHECK_SETTINGS = 100;
+
+    //same as above. taken from LocationUpdatesService
+    protected LocationRequest locationRequest;
+
+    //just a google map
+    GoogleMap mMap;
+
+    //list containing buoy coordinates
+    List<LatLng> percorsoGara;
+
+    //list containing ship positions during the race
+    List<LatLng> percorsoBarca;
+
+    boolean firstLoaded = true;
+
+    // object containing the race track
+    private Track track;
+
+    //marker showing our current position
+    private Marker currentBoatposition;
+
+    //the polyline representing ship path
+    private Polyline actualPath;
+
+    private boolean isRegistered = false;
+
     // A reference to the service used to get location updates.
     private LocationUpdatesService mService = null;
+
+    //buttons to start and stop race
     private Button startRaceButton;
     private Button stopRaceButton;
+
+    // Array containing buoy markers, used to change colors when approaching a buoy
     private ArrayList<Marker> boaMarkers;
+
+    // index of current target boa, used as the above
     private int currentBoa;
+
+    // check if we are resuming after a pause or we are resuming after onCreate
     private boolean isPaused = false;
+
     // Tracks the bound state of the service.
     private boolean mBound = false;
+
+    // true if we are rotatind screen
+    private boolean isConfigurationChanged;
+    /*
+     * Broadcast receiver, it tracks new position event, handle update request and location mode changes
+     */
     private BroadcastReceiver receiver = new BroadcastReceiver()
     {
         @Override
@@ -97,6 +139,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             switch (intent.getAction())
             {
+                /*
+                 * If we got a new position we check if we are approaching a bouy, then we take speed and bearing
+                 * data from intent and set a new point in the ship path. We move the marker in our current position
+                 * and set informative text according to info received.
+                 */
                 case LocationUpdatesService.ACTION_SERVICE_GET_NEW_POSITION:
 
                     Location location = intent.getParcelableExtra(LocationUpdatesService.INTENT_LOCATION);
@@ -151,6 +198,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     break;
 
+                /*
+                 * If we requested a track update we are resuming the screen. Pass the intent to restorePercorsoBarca
+                 * and change buoy markers.
+                 */
                 case LocationUpdatesService.ACTION_SERVICE_GET_UPDATED_TRACK:
                     restorePercorsoBarca(intent);
                     for (int i = 1; i < boaMarkers.size() - 1; ++i)
@@ -160,6 +211,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                     break;
+
+                /*
+                 * If location providers are changing maybe someone disabled GPS, if yes (you are so mean to us) show a dialog
+                 */
                 case LocationManager.PROVIDERS_CHANGED_ACTION:
                 {
                     if (!isShow)
@@ -171,7 +226,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     };
-    private boolean isConfigurationChanged;
+
     // Monitors the state of the connection to the service.
     private final ServiceConnection mServiceConnection = new ServiceConnection()
     {
@@ -203,13 +258,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        //create an api client, used to show "enable GPS" dialog
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this).build();
         mGoogleApiClient.connect();
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
+        //check again for permissions
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -220,6 +276,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String trackJSON;
             trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
             track = Track.parseJSON(trackJSON);
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
@@ -231,6 +289,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     {
         super.onStart();
 
+        // always check for permissions... you never know
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 3);
@@ -263,11 +322,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // Restore the state of the buttons when the activity (re)launches.
             setButtonsState(Utils.requestingLocationUpdates(this));
+
             // Bind to the service. If the service is in foreground mode, this signals to the service
             // that since this activity is in the foreground, the service can exit foreground mode.
             bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
                     Context.BIND_AUTO_CREATE);
-//        mService.requestLocationUpdates();
         }
     }
 
@@ -282,11 +341,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             unbindService(mServiceConnection);
             mBound = false;
         }
+
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();
     }
 
+    /*
+     * Pretty obvious
+     */
     @Override
     protected void onSaveInstanceState(Bundle outState)
     {
@@ -299,6 +362,162 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        if (isRegistered)
+        {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+            isRegistered = false;
+        }
+        isPaused = true;
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        // check for permissions... once again
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+        }
+        else
+        {
+            if (!isRegistered)
+            {
+                registerBroadcastReceiver();
+                isRegistered = true;
+            }
+            if (isPaused)
+            {
+                //if the activity was paused, we stopped broadcast receive, we surely miss some ship path point
+                // we don't want to lose them, do we?
+                mService.requestUpdate();
+                isPaused = false;
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        //if permission denied show an alert and punish the user closing the app
+        if (grantResults.length <= 0
+                || grantResults[0] != PackageManager.PERMISSION_GRANTED)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.important);
+
+            final TextView testo = new TextView(this);
+            testo.setText(R.string.permission_is_mandatory);
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+            testo.setPadding(padding, 0, padding, 0);
+            builder.setView(testo);
+            builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    finishAffinity();
+                }
+            });
+            builder.setOnCancelListener(new DialogInterface.OnCancelListener()
+            {
+                @Override
+                public void onCancel(DialogInterface dialog)
+                {
+                    finishAffinity();
+                }
+            });
+            builder.show();
+        }
+        else
+        {
+            //act accordingly to the request number
+            switch (requestCode)
+            {
+                case 1:
+                {
+                    Intent intent = getIntent();
+                    String trackJSON;
+                    trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
+                    track = Track.parseJSON(trackJSON);
+                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                            .findFragmentById(R.id.map);
+                    mapFragment.getMapAsync(this);
+                    break;
+                }
+                case 2:
+                {
+                    if (!isRegistered)
+                    {
+                        registerBroadcastReceiver();
+
+                        isRegistered = true;
+                    }
+                    if (isPaused || isChangingConfigurations())
+                    {
+                        mService.requestUpdate();
+                        isPaused = false;
+                    }
+                    break;
+                }
+                case 3:
+                {
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .registerOnSharedPreferenceChangeListener(this);
+
+                    startRaceButton = findViewById(R.id.start_race_button);
+                    stopRaceButton = findViewById(R.id.stop_race_button);
+
+                    startRaceButton.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            startRace();
+                        }
+                    });
+
+                    stopRaceButton.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mService.removeLocationUpdates();
+                        }
+                    });
+
+                    // Restore the state of the buttons when the activity (re)launches.
+                    setButtonsState(Utils.requestingLocationUpdates(this));
+                    // Bind to the service. If the service is in foreground mode, this signals to the service
+                    // that since this activity is in the foreground, the service can exit foreground mode.
+                    bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
+                            Context.BIND_AUTO_CREATE);
+//        mService.requestLocationUpdates();
+                }
+            }
+        }
+    }
+
+    private void registerBroadcastReceiver()
+    {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_NEW_POSITION);
+        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_UPDATED_TRACK);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
+        registerReceiver(receiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+    }
+
+    /*
+     * start a race, ask service for location updates.
+     */
     private void startRace()
     {
         mService.startRace(track);
@@ -311,6 +530,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
+     * Pretty obvious
+     */
     private void stopRace()
     {
         mService.stopRace();
@@ -319,6 +541,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    /*
+     * set buttons state
+     */
     private void setButtonsState(boolean requestingLocationUpdates)
     {
         if (requestingLocationUpdates)
@@ -333,6 +558,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
+     * when map is ready set up all the things. If we are coming from notification we need to restore ship path
+     */
     @Override
     public void onMapReady(GoogleMap googleMap)
     {
@@ -347,8 +575,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
+     * We need to set our buoys, otherwise we don't know were to go
+     */
     private void setBoas()
     {
+
         float radius = Preferences.load(this, "pref_key_circle_radius", 20);
         if (boaMarkers == null)
         {
@@ -360,11 +592,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         mMap.clear();
         LatLng latLng;
+
+        // used to zoom map on the track
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
         percorsoGara = new ArrayList<>();
+
+        //add a polyline that will show us track path
         Polyline line = mMap.addPolyline(new PolylineOptions()
                 .width(5)
                 .color(Color.rgb(46, 125, 50)));
+
+        //add buoys to the map, and show track path
         if (track.length() > 0)
         {
             Boa b = track.getBoa(0);
@@ -442,6 +681,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 firstLoaded = false;
             }
             line.setPoints(percorsoGara);
+            // if percorsoBarca contains some points, we are coming from a rotation change (likely). Show them on the map
             if (percorsoBarca != null && percorsoBarca.size() > 0)
             {
                 putCurrentPositionMarker(percorsoBarca.get(percorsoBarca.size() - 1), 0);
@@ -456,6 +696,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
+     * Called when we need to restore ship path
+     */
     private void restorePercorsoBarca(Intent intent)
     {
         Parcelable[] locations = intent.getParcelableArrayExtra(LocationUpdatesService.INTENT_PERCORSO_BARCA);
@@ -491,6 +734,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    // pretty obvious
     private void putCurrentPositionMarker(LatLng pos, float bearing)
     {
         if (pos != null)
@@ -511,6 +755,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    // pretty obvious
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
@@ -525,6 +770,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //listen for preference change to change button state
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s)
     {
@@ -536,6 +782,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    // used to set informations on screen
     private void setTextView(Double latitude, Double longitude, float speed, float distance)
     {
         DecimalFormat coordinateFormat = new DecimalFormat("0.######");
@@ -553,6 +800,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         textDistance.setText(distanceFormat.format(distance) + " m");
     }
 
+    // these methods are used to show "enable GPS" dialog
     @Override
     public void onConnected(@Nullable Bundle bundle)
     {
@@ -569,7 +817,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mGoogleApiClient,
                         builder.build()
                 );
-
         result.setResultCallback(this);
     }
 
@@ -585,6 +832,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    //on result callback. actually shows the dialog if needed
     @Override
     public void onResult(@NonNull LocationSettingsResult locationSettingsResult)
     {
@@ -620,6 +868,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //handle "enable GPS" dialog result
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -641,150 +890,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-        if (isRegistered)
-        {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-            isRegistered = false;
-        }
-        isPaused = true;
-    }
 
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-        }
-        else
-        {
-            if (!isRegistered)
-            {
-                registerBroadcastReceiver();
-
-                isRegistered = true;
-            }
-            if (isPaused)
-            {
-                mService.requestUpdate();
-                isPaused = false;
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length <= 0
-                || grantResults[0] != PackageManager.PERMISSION_GRANTED)
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.important);
-
-            final TextView testo = new TextView(this);
-            testo.setText(R.string.permission_is_mandatory);
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-            testo.setPadding(padding, 0, padding, 0);
-            builder.setView(testo);
-            builder.setPositiveButton(R.string.alert_ok, new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    finishAffinity();
-                }
-            });
-            builder.setOnCancelListener(new DialogInterface.OnCancelListener()
-            {
-                @Override
-                public void onCancel(DialogInterface dialog)
-                {
-                    finishAffinity();
-                }
-            });
-            builder.show();
-        }
-        else
-        {
-            switch (requestCode)
-            {
-                case 1:
-                {
-                    Intent intent = getIntent();
-                    String trackJSON;
-                    trackJSON = intent.getStringExtra(FragmentList.INTENT_TRACK_OBJECT);
-                    track = Track.parseJSON(trackJSON);
-                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                            .findFragmentById(R.id.map);
-                    mapFragment.getMapAsync(this);
-                    break;
-                }
-                case 2:
-                {
-                    if (!isRegistered)
-                    {
-                        registerBroadcastReceiver();
-
-                        isRegistered = true;
-                    }
-                    if (isPaused || isChangingConfigurations())
-                    {
-                        mService.requestUpdate();
-                        isPaused = false;
-                    }
-                    break;
-                }
-                case 3:
-                {
-                    PreferenceManager.getDefaultSharedPreferences(this)
-                            .registerOnSharedPreferenceChangeListener(this);
-
-                    startRaceButton = findViewById(R.id.start_race_button);
-                    stopRaceButton = findViewById(R.id.stop_race_button);
-
-                    startRaceButton.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            startRace();
-                        }
-                    });
-
-                    stopRaceButton.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            mService.removeLocationUpdates();
-                        }
-                    });
-
-                    // Restore the state of the buttons when the activity (re)launches.
-                    setButtonsState(Utils.requestingLocationUpdates(this));
-                    // Bind to the service. If the service is in foreground mode, this signals to the service
-                    // that since this activity is in the foreground, the service can exit foreground mode.
-                    bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
-                            Context.BIND_AUTO_CREATE);
-//        mService.requestLocationUpdates();
-                }
-            }
-        }
-    }
-
-    private void registerBroadcastReceiver()
-    {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_NEW_POSITION);
-        filter.addAction(LocationUpdatesService.ACTION_SERVICE_GET_UPDATED_TRACK);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
-
-        registerReceiver(receiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
-    }
 }

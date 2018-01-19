@@ -25,6 +25,9 @@ import java.util.Date;
 
 import it.univaq.ing.myshiprace.R;
 
+/*
+ * Utility class, code based on https://github.com/googlesamples/android-play-location
+ */
 public class Utils
 {
 
@@ -33,7 +36,6 @@ public class Utils
     /**
      * Returns true if requesting location updates, otherwise returns false.
      *
-     * @param context The {@link Context}.
      */
     public static boolean requestingLocationUpdates(Context context)
     {
