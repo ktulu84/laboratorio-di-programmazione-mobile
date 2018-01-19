@@ -166,6 +166,13 @@ public class LocationUpdatesService extends Service
         currentBoa = 1;
     }
 
+    public void stopRace()
+    {
+        race = null;
+        track = null;
+        currentBoa = -1;
+    }
+
     @Override
     public void onCreate()
     {
@@ -547,6 +554,11 @@ public class LocationUpdatesService extends Service
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    public LocationRequest getLocationRequest()
+    {
+        return mLocationRequest;
     }
 
     /**

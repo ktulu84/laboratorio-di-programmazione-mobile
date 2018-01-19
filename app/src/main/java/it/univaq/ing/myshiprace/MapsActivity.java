@@ -88,25 +88,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean isPaused = false;
     // Tracks the bound state of the service.
     private boolean mBound = false;
-    // Monitors the state of the connection to the service.
-    private final ServiceConnection mServiceConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            mService = null;
-            mBound = false;
-        }
-    };
-
     private BroadcastReceiver receiver = new BroadcastReceiver()
     {
         @Override
@@ -190,17 +171,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     };
+    private boolean isConfigurationChanged;
+    // Monitors the state of the connection to the service.
+    private final ServiceConnection mServiceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
+            mService = binder.getService();
+            locationRequest = mService.getLocationRequest();
+            if (isConfigurationChanged)
+            {
+                mService.requestUpdate();
+                isConfigurationChanged = false;
+            }
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            mService = null;
+            mBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(LocationUpdatesService.UPDATE_INTERVAL_IN_MILLISECONDS);
-        locationRequest.setFastestInterval(LocationUpdatesService.FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -256,7 +257,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void onClick(View view)
                 {
-                    mService.removeLocationUpdates();
+                    stopRace();
                 }
             });
 
@@ -292,6 +293,44 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onSaveInstanceState(outState);
         outState.putBoolean("first_load", firstLoaded);
         outState.putInt("current_boa", currentBoa);
+        if (isChangingConfigurations())
+        {
+            outState.putBoolean("configuration_change", true);
+        }
+    }
+
+    private void startRace()
+    {
+        mService.startRace(track);
+        mService.requestLocationUpdates();
+        currentBoa = 1;
+        boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        if (percorsoBarca != null)
+        {
+            percorsoBarca.clear();
+        }
+    }
+
+    private void stopRace()
+    {
+        mService.stopRace();
+        mService.removeLocationUpdates();
+        currentBoa = -1;
+
+    }
+
+    private void setButtonsState(boolean requestingLocationUpdates)
+    {
+        if (requestingLocationUpdates)
+        {
+            startRaceButton.setEnabled(false);
+            stopRaceButton.setEnabled(true);
+        }
+        else
+        {
+            startRaceButton.setEnabled(true);
+            stopRaceButton.setEnabled(false);
+        }
     }
 
     @Override
@@ -319,7 +358,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             boaMarkers.clear();
         }
-
+        mMap.clear();
         LatLng latLng;
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         percorsoGara = new ArrayList<>();
@@ -481,6 +520,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             firstLoaded = savedInstanceState.getBoolean("first_load");
             currentBoa = savedInstanceState.getInt("current_boa");
+            isConfigurationChanged = savedInstanceState.getBoolean("configuration_change", false);
+
         }
     }
 
@@ -628,7 +669,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 isRegistered = true;
             }
-            if (isPaused || isChangingConfigurations())
+            if (isPaused)
             {
                 mService.requestUpdate();
                 isPaused = false;
@@ -734,28 +775,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        mService.requestLocationUpdates();
                 }
             }
-        }
-    }
-
-    private void startRace()
-    {
-        mService.startRace(track);
-        mService.requestLocationUpdates();
-        currentBoa = 1;
-        boaMarkers.get(currentBoa).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-    }
-
-    private void setButtonsState(boolean requestingLocationUpdates)
-    {
-        if (requestingLocationUpdates)
-        {
-            startRaceButton.setEnabled(false);
-            stopRaceButton.setEnabled(true);
-        }
-        else
-        {
-            startRaceButton.setEnabled(true);
-            stopRaceButton.setEnabled(false);
         }
     }
 
