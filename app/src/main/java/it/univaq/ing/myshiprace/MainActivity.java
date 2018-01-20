@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -28,11 +29,13 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
 
+    private Handler mHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
+        mHandler = new Handler();
         //reset button status on MapsActivity
         Utils.setRequestingLocationUpdates(this, false);
 
@@ -141,8 +144,16 @@ public class MainActivity extends AppCompatActivity
                 getFragmentManager().beginTransaction().replace(R.id.main_container, new SettingsFragment()).commit();
                 break;
         }
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        Runnable mPendingRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        };
+        mHandler.postDelayed(mPendingRunnable, 5);
         return true;
     }
 }
