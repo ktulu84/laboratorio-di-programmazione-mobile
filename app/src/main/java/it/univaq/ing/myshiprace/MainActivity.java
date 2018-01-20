@@ -3,7 +3,6 @@ package it.univaq.ing.myshiprace;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -139,8 +138,7 @@ public class MainActivity extends AppCompatActivity
                 getFragmentManager().beginTransaction().replace(R.id.main_container, new FragmentInfo()).commit();
                 break;
             case R.id.nav_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
+                getFragmentManager().beginTransaction().replace(R.id.main_container, new SettingsFragment()).commit();
                 break;
         }
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

@@ -67,16 +67,6 @@
         <service android:name=".service.MyService" />
         <service android:name=".service.LocationUpdatesService" />
 
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/settings"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
     </application>
 
 </manifest>

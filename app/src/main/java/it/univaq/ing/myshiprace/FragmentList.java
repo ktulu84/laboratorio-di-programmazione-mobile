@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -94,7 +95,7 @@ public class FragmentList extends Fragment
             builder.setPositiveButton(R.string.alert_ok, null);
             builder.show();
         }
-
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.app_name);
         View view = inflater.inflate(R.layout.activity_lista, container, false);
         context = view.getContext();
 

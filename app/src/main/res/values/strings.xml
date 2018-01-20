@@ -69,4 +69,5 @@
     <string name="gps_enabled">GPS enabled</string>
     <string name="gps_not_enabled">GPS is not enabled</string>
     <string name="dialog_download_server">Track download server address</string>
+    <string name="app_info">Informazioni sull\'applicazione</string>
 </resources>
