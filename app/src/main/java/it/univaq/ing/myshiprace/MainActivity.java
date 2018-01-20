@@ -29,13 +29,10 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
 {
 
-    private Handler mHandler;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        mHandler = new Handler();
         //reset button status on MapsActivity
         Utils.setRequestingLocationUpdates(this, false);
 
@@ -153,7 +150,8 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(GravityCompat.START);
             }
         };
-        mHandler.postDelayed(mPendingRunnable, 5);
+        Handler handler = new Handler();
+        handler.postDelayed(mPendingRunnable, 5);
         return true;
     }
 }
