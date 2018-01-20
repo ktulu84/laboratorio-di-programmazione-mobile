@@ -124,7 +124,7 @@ public class TrackActivity extends AppCompatActivity
             });
 
             //if track don't contain a buoy, we don't want to play it, do we?
-            if (rt.length() <= 0)
+            if (rt.length() <= 1)
             {
                 fabPlay.setVisibility(View.INVISIBLE);
             }
@@ -151,7 +151,7 @@ public class TrackActivity extends AppCompatActivity
                 list.getAdapter().notifyItemRemoved(position);
                 list.getAdapter().notifyItemRangeChanged(0, rt.length());
                 final FloatingActionButton fab = findViewById(R.id.activity_play_track_fab);
-                if (rt.length() <= 0)
+                if (rt.length() <= 1)
                     fab.setVisibility(View.INVISIBLE);
 
                 Snackbar.make(v, R.string.buoy_removed_text, Snackbar.LENGTH_LONG).setAction(R.string.undo_snackbar, new View.OnClickListener()
@@ -166,7 +166,8 @@ public class TrackActivity extends AppCompatActivity
                         DBHelper.get(v.getContext()).save(temp);
                         list.getAdapter().notifyItemInserted(position);
                         list.getAdapter().notifyItemRangeChanged(0, rt.length());
-                        fab.setVisibility(View.VISIBLE);
+                        if (rt.length() > 1)
+                            fab.setVisibility(View.VISIBLE);
                     }
                 }).setActionTextColor(Color.RED).show();
             }
@@ -212,7 +213,8 @@ public class TrackActivity extends AppCompatActivity
                     DBHelper.get(context).saveOrUpdate(rt);
                     list.getAdapter().notifyDataSetChanged();
                     FloatingActionButton fab = findViewById(R.id.activity_play_track_fab);
-                    fab.setVisibility(View.VISIBLE);
+                    if (rt.length() > 1)
+                        fab.setVisibility(View.VISIBLE);
                 }
             }
         });
