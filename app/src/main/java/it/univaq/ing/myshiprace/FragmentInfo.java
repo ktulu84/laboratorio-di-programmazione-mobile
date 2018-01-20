@@ -3,6 +3,7 @@ package it.univaq.ing.myshiprace;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,7 +28,7 @@ public class FragmentInfo extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState)
     {
-        getActivity().getActionBar().setTitle(R.string.app_info);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.app_info);
         View view = inflater.inflate(R.layout.activity_info, container, false);
         String[] titles = getResources().getStringArray(R.array.info_title);
         String[] subtitles = getResources().getStringArray(R.array.info_subtitle);
