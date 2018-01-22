@@ -99,7 +99,8 @@ public class LocationUpdatesService extends Service
     /**
      * The name of the channel for notifications.
      */
-    private static final String CHANNEL_ID = "channel_01";
+    private static final String CHANNEL_ID_HIGH = "channel_01";
+    private static final String CHANNEL_ID_LOW = "channel_02";
     /**
      * The identifier for the notification displayed for the foreground service.
      */
@@ -141,6 +142,10 @@ public class LocationUpdatesService extends Service
      * The current location.
      */
     private Location mLocation;
+
+    /*
+     * Receiver for network connectivity change. Used to send unsent ship positions to server.
+     */
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver()
     {
         @Override
@@ -200,12 +205,15 @@ public class LocationUpdatesService extends Service
         // Android O requires a Notification Channel.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
-            CharSequence name = getString(R.string.app_name);
+            CharSequence name_high = getString(R.string.app_name) + " HIGH";
+            CharSequence name_low = getString(R.string.app_name) + " LOW";
             // Create the channel for the notification
             NotificationChannel mChannel =
-                    new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT);
+                    new NotificationChannel(CHANNEL_ID_HIGH, name_high, NotificationManager.IMPORTANCE_DEFAULT);
 
             // Set the Notification Channel for the Notification Manager.
+            mNotificationManager.createNotificationChannel(mChannel);
+            mChannel = new NotificationChannel(CHANNEL_ID_LOW, name_low, NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(mChannel);
         }
     }
@@ -264,7 +272,7 @@ public class LocationUpdatesService extends Service
         {
             Log.i(TAG, "Starting foreground service");
 
-            startForeground(NOTIFICATION_ID, getNotification());
+            startForeground(NOTIFICATION_ID, getNotification(Notification.PRIORITY_DEFAULT));
         }
         return true; // Ensures onRebind() is called when a client re-binds.
     }
@@ -284,7 +292,7 @@ public class LocationUpdatesService extends Service
     /**
      * Returns the notification used as part of the foreground service.
      */
-    private Notification getNotification()
+    private Notification getNotification(Integer priority)
     {
         Intent intent = new Intent(this, LocationUpdatesService.class);
 
@@ -317,15 +325,25 @@ public class LocationUpdatesService extends Service
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        String CHANNEL_ID = CHANNEL_ID_LOW;
+        if (priority == null)
+        {
+            priority = Notification.PRIORITY_DEFAULT;
+        }
+        else if (priority == Notification.PRIORITY_HIGH)
+        {
+            CHANNEL_ID = CHANNEL_ID_HIGH;
+        }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .addAction(R.drawable.ic_launch, getString(R.string.launch_activity),
-                        activityPendingIntent)
+//                .addAction(R.drawable.ic_launch, getString(R.string.launch_activity),
+//                        activityPendingIntent)
                 .addAction(R.drawable.ic_cancel, getString(R.string.remove_location_updates),
                         servicePendingIntent)
+                .setContentIntent(activityPendingIntent)
                 .setContentText(text)
                 .setContentTitle(Utils.getLocationTitle(this))
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_HIGH)
+                .setPriority(priority)
                 .setSmallIcon(R.drawable.ic_notification_icon_2)
                 .setTicker(text)
                 .setWhen(System.currentTimeMillis())
@@ -442,10 +460,12 @@ public class LocationUpdatesService extends Service
             boalocation.setLongitude(track.getBoa(currentBoa).getLongitude());
             float distance = location.distanceTo(boalocation);
             intent.putExtra(INTENT_DISTANCE, distance);
+            int priority = Notification.PRIORITY_LOW;
             if (distance < Preferences.load(this, "pref_key_circle_radius", 20))
             {
                 intent.putExtra(INTENT_NEAR_BOA, true);
                 intent.putExtra(INTENT_BOA_NUMBER, currentBoa);
+                priority = Notification.PRIORITY_HIGH;
                 if (currentBoa < track.length() - 1)
                 {
                     ++currentBoa;
@@ -456,7 +476,7 @@ public class LocationUpdatesService extends Service
             // Update notification content if running as a foreground service.
             if (serviceIsRunningInForeground(this))
             {
-                mNotificationManager.notify(NOTIFICATION_ID, getNotification());
+                mNotificationManager.notify(NOTIFICATION_ID, getNotification(priority));
             }
             saveShipPosition(location);
             percorsoBarca.add(location);
