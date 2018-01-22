@@ -542,8 +542,7 @@ public class LocationUpdatesService extends Service
     {
         if (isNetworkAvailable())
         {
-            ShipPosition[] ships = DBHelper.get(this).getUntrasmitted(race.getId()).toArray(new ShipPosition[]{});
-            new MyTask().execute(ships);
+            new MyTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, null);
         }
     }
 
@@ -566,8 +565,6 @@ public class LocationUpdatesService extends Service
             return false;
         }
     }
-
-
 
     private Boolean isNetworkAvailable()
     {
@@ -596,13 +593,14 @@ public class LocationUpdatesService extends Service
     /*
      * called by sendShipPositions to send data to server
      */
-    private class MyTask extends AsyncTask<ShipPosition, Void, Void>
+    private class MyTask extends AsyncTask<Void, Void, Void>
     {
         @Override
-        protected Void doInBackground(ShipPosition... shipPositions)
+        protected Void doInBackground(Void... voids)
         {
-            boolean result = true;
-            for (ShipPosition s : shipPositions)
+            List<ShipPosition> shipsPositions = DBHelper.get(getApplicationContext()).getUntrasmitted(race.getId());
+            boolean result;
+            for (ShipPosition s : shipsPositions)
             {
                 String response = Request.doRequest(Preferences.load(getApplicationContext(), "pref_key_server_address", "http://ktulu.altervista.org"), new String[]{"PIPPO"}, new String[]{s.toJSONObject().toString()});
                 result = response != null && response.equalsIgnoreCase("ok");
@@ -618,6 +616,12 @@ public class LocationUpdatesService extends Service
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            super.onPostExecute(aVoid);
         }
     }
 }
