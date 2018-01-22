@@ -154,6 +154,7 @@ public class LocationUpdatesService extends Service
             sendShipPositions();
         }
     };
+    private boolean isRegisteredNetworkUpdates = false;
 
     public LocationUpdatesService()
     {
@@ -361,7 +362,11 @@ public class LocationUpdatesService extends Service
         {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             Utils.setRequestingLocationUpdates(this, false);
-            unregisterReceiver(mNetworkReceiver);
+            if (isRegisteredNetworkUpdates)
+            {
+                unregisterReceiver(mNetworkReceiver);
+                isRegisteredNetworkUpdates = false;
+            }
             stopSelf();
         }
         catch (SecurityException unlikely)
@@ -385,6 +390,7 @@ public class LocationUpdatesService extends Service
             mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                     mLocationCallback, mServiceHandler.getLooper());
             registerReceiver(mNetworkReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
+            isRegisteredNetworkUpdates = true;
         }
         catch (SecurityException unlikely)
         {
