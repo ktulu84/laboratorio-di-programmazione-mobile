@@ -382,6 +382,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (isRegistered)
         {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+            unregisterReceiver(receiver);
             isRegistered = false;
         }
         isPaused = true;
